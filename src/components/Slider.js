@@ -32,10 +32,12 @@ const images = [
 const Slider = () => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
+    const [mapPopup, setMapPopup] = useState('');
     const swiperRef = useRef(null);
     
-    const handleMapCenter = (center) => {
+    const handleMapCenter = (center, text) => {
         setMapCenter(center);
+        setMapPopup(text);
     }
 
     const handleShowMap = (isShow) => {
@@ -57,7 +59,7 @@ const Slider = () => {
     const handleSwiperInit = (swiper) => {
         swiperRef.current = swiper;
     };
-    
+
     return (
         <>
             <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -78,7 +80,7 @@ const Slider = () => {
                                     {/* <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl p-1" style={{backgroundColor: "#FFB6C1"}} /> */}
                                     <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
                                     <div className="absolute right-1 bottom-1">
-                                        <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center); }}>
+                                        <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt); }}>
                                             <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "24px", width: "20px" }} />
                                         </button>
                                     </div>
@@ -95,7 +97,7 @@ const Slider = () => {
                 style={{ zIndex: "9999" }}
                 sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "300px" } }}
             >
-                <LeafletMaps mapCenter={mapCenter} />
+                <LeafletMaps mapCenter={mapCenter} mapPopup={mapPopup} />
             </Drawer>
         </>
     );
