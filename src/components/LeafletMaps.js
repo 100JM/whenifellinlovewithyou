@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
 
 const LeafletMaps = ({mapCenter}) => {
     return (
-        <div className="p-3 rounded" style={{ height: '100vh', width: '100%' }}>
+        <div className="p-3 rounded" style={{ height: '300px', width: '100%' }}>
             <MapContainer center={mapCenter} zoom={17} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
