@@ -58,7 +58,7 @@ const Slider = () => {
                     slidesPerView={1}
                     loop={true}
                     speed={400}
-                    autoplay={{ delay: 3000, disableOnInteraction: false }}
+                    autoplay={{ delay: 3000, pauseOnMouseEnter: true }}
                     navigation={true}
                     className='w-full h-full rounded-xl'
                 >
@@ -84,7 +84,7 @@ const Slider = () => {
                 onClose={() => handleShowMap(false)}
                 anchor={"bottom"}
                 style={{ zIndex: "9999" }}
-                sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "50%" } }}
+                sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "60%" } }}
             >
                 <LeafletMaps mapCenter={mapCenter} />
             </Drawer>
