@@ -18,9 +18,6 @@ const LeafletMaps = ({mapCenter}) => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 <Marker position={mapCenter}>
-                    <Popup>
-                        A pretty CSS3 popup. <br /> Easily customizable.
-                    </Popup>
                 </Marker>
             </MapContainer>
         </div>
