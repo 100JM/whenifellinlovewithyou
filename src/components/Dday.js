@@ -35,8 +35,8 @@ const Dday = () => {
     }, []);
 
     return (
-        <div className="w-full p-2 mt-6 rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)", height: "calc(75% - 1.5rem)" }}>
-            <div>
+        <div className="w-full h-3/4 p-2 mt-6 rounded-xl text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)", height: "calc(75% - 1.5rem)" }}>
+            <div className="w-full h-full grid justify-center items-center">
                 <div className="w-full mb-1">
                     {`오늘 날짜 ${today} 기준으로`}
                 </div>
@@ -49,7 +49,7 @@ const Dday = () => {
                 <div className="w-full mb-1" style={{color: "#898A8D"}}>
                     만난지 <span style={{color: "#FFB6C1"}}>{elapsedTime.minutes}</span>분
                 </div>
-                <div className="w-full mb-1" style={{color: "#898A8D"}}>
+                <div className="w-full" style={{color: "#898A8D"}}>
                     만난지 <span style={{color: "#FFB6C1"}}>{elapsedTime.seconds}</span>초
                 </div>
             </div>
