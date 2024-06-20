@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import GoogleMaps from './GoogleMaps';
 import LeafletMaps from './LeafletMaps';
@@ -32,16 +32,8 @@ const images = [
 const Slider = () => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
-    const [swiperAutoplay, setSwiperAutoplay] = useState(true);
-
-    useEffect(() => {
-        if (showMap) {
-            setSwiperAutoplay(false);
-        } else {
-            setSwiperAutoplay(true);
-        }
-    }, [showMap]);
-
+    const swiperRef = useRef(null);
+    
     const handleMapCenter = (center) => {
         setMapCenter(center);
     }
@@ -50,6 +42,22 @@ const Slider = () => {
         setShowMap(isShow);
     };
 
+    useEffect(() => {
+        if (showMap) {
+            if (swiperRef.current && swiperRef.current.autoplay) {
+                swiperRef.current.autoplay.stop();
+            }
+        } else {
+            if (swiperRef.current && swiperRef.current.autoplay) {
+                swiperRef.current.autoplay.start();
+            }
+        }
+    }, [showMap]);
+
+    const handleSwiperInit = (swiper) => {
+        swiperRef.current = swiper;
+    };
+    
     return (
         <>
             <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -61,6 +69,7 @@ const Slider = () => {
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
                     navigation={true}
                     className='w-full h-full rounded-xl'
+                    onInit={handleSwiperInit}
                 >
                     {images.map((i) => {
                         return (
