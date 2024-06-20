@@ -58,7 +58,7 @@ const Slider = () => {
                     slidesPerView={1}
                     loop={true}
                     speed={400}
-                    autoplay={{ delay: 3000, pauseOnMouseEnter: true }}
+                    autoplay={{ delay: 3000, disableOnInteraction: false }}
                     navigation={true}
                     className='w-full h-full rounded-xl'
                 >
@@ -70,7 +70,7 @@ const Slider = () => {
                                     <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
                                     <div className="absolute right-1 bottom-1">
                                         <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center); }}>
-                                            <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "18px", width: "16px" }} />
+                                            <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "24px", width: "20px" }} />
                                         </button>
                                     </div>
                                 </div>
