@@ -4,9 +4,9 @@ import Slider from './components/Slider';
 function App() {
   return (
     <>
-      <div className="w-full h-2/5 p-5">
-        <div className="w-full h-1/4 p-3 rounded-xl flex justify-center items-center" style={{boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)"}}>
-          <div>
+      <div className="w-full h-2/5 py-3 px-6">
+        <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)"}}>
+          <div className="h-full">
             <div className="w-full flex justify-center">
               <span>우리가 처음 만난 날</span>
             </div>
@@ -17,7 +17,7 @@ function App() {
         </div>
         <Dday />
       </div>
-      <div className="w-full h-3/5 p-5 pt-0">
+      <div className="w-full h-3/5 py-3 px-6 pt-0">
         <Slider />
       </div>
     </>
