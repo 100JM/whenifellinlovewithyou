@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -25,6 +27,12 @@ const images = [
 ]
 
 const Slider = () => {
+    const [showMap, setShowMap] = useState(false);
+
+    const handleShowMap = (isShow) => {
+        setShowMap(isShow);
+    };
+
     return (
         <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
             <Swiper
@@ -32,7 +40,7 @@ const Slider = () => {
                 slidesPerView={1}
                 loop={true}
                 speed={400}
-                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                // autoplay={{ delay: 3000, disableOnInteraction: false }}
                 navigation={true}
                 className='w-full h-full rounded-xl'
             >
@@ -43,21 +51,26 @@ const Slider = () => {
                                 {/* <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl p-1" style={{backgroundColor: "#FFB6C1"}} /> */}
                                 <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
                                 <div className="absolute right-1 bottom-1">
-                                    <Drawer
-                                        anchor={"bottom"}
-                                        style={{ zIndex: "9999" }}
-                                        sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "50%" } }}
-                                    >
-                                        <button title="위치보기">
-                                            <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "18px", width: "16px" }} />
-                                        </button>
-                                    </Drawer>
+                                    <button title="위치보기" onClick={() => handleShowMap(true)}>
+                                        <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "18px", width: "16px" }} />
+                                    </button>
                                 </div>
                             </div>
                         </SwiperSlide>
                     )
                 })}
             </Swiper>
+            <Drawer
+                open={showMap}
+                onClose={() => handleShowMap(false)}
+                anchor={"bottom"}
+                style={{ zIndex: "9999" }}
+                sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "50%" } }}
+            >
+                <div>
+                    test
+                </div>
+            </Drawer>
         </div>
     );
 }

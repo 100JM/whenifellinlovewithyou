@@ -8,10 +8,10 @@ function App() {
         <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)"}}>
           <div className="h-full">
             <div className="text-center">
-              <span>우리가 처음 만난 날</span>
+              우리가 처음 만난 날
             </div>
             <div className="text-center" style={{color: "#898A8D"}}>
-              <span>2023년 10월 28일 토요일 🥰</span>
+              2023년 10월 28일 토요일 🥰
             </div>
           </div>
         </div>
