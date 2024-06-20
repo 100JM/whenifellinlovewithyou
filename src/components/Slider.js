@@ -84,7 +84,7 @@ const Slider = () => {
                 onClose={() => handleShowMap(false)}
                 anchor={"bottom"}
                 style={{ zIndex: "9999" }}
-                sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "60%" } }}
+                sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "300px" } }}
             >
                 <LeafletMaps mapCenter={mapCenter} />
             </Drawer>
