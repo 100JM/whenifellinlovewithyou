@@ -35,7 +35,7 @@ const Dday = () => {
     }, []);
 
     return (
-        <div className="w-full h-3/4 p-2 mt-6 rounded-xl text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)", height: "calc(75% - 1.5rem)" }}>
+        <div className="w-full h-3/4 p-2 mt-3 rounded-xl text-center flex justify-center items-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)", height: "calc(75% - 0.75rem)" }}>
             <div className="w-full h-full grid justify-center items-center">
                 <div className="w-full mb-1">
                     {`오늘 날짜 ${today} 기준으로`}

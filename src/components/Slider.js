@@ -2,6 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot } from '@fortawesome/free-solid-svg-icons';
+import Drawer from '@mui/material/Drawer';
 
 import we2 from '../assets/we-2.jpeg';
 import we3 from '../assets/we-3.jpeg';
@@ -15,12 +16,12 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const images = [
-    {image : we2, alt: '네컷사진'},
-    {image : we3, alt: '일본 오사카 여행 USJ'},
-    {image : we4, alt: '일본 오사카 여행 첫날 숙소'},
-    {image : we5, alt: '베트남 나트랑 여행 CCCP coffee'},
-    {image : we6, alt: '베트남 나트랑 여행 OLA cafe'},
-    {image : we7, alt: '베트남 나트랑 여행 선라이즈 나트랑 비치 호텔'},
+    { image: we2, alt: '네컷사진' },
+    { image: we3, alt: '일본 오사카 여행 USJ' },
+    { image: we4, alt: '일본 오사카 여행 첫날 숙소' },
+    { image: we5, alt: '베트남 나트랑 여행 CCCP coffee' },
+    { image: we6, alt: '베트남 나트랑 여행 OLA cafe' },
+    { image: we7, alt: '베트남 나트랑 여행 선라이즈 나트랑 비치 호텔' },
 ]
 
 const Slider = () => {
@@ -42,11 +43,17 @@ const Slider = () => {
                                 {/* <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl p-1" style={{backgroundColor: "#FFB6C1"}} /> */}
                                 <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
                                 <div className="absolute right-1 bottom-1">
-                                    <button title="위치보기">
-                                        <FontAwesomeIcon icon={faLocationDot} style={{color: "#FF6347", height: "18px", width: "16px"}}/>
-                                    </button>
+                                    <Drawer
+                                        anchor={"bottom"}
+                                        style={{ zIndex: "9999" }}
+                                        sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "50%" } }}
+                                    >
+                                        <button title="위치보기">
+                                            <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "18px", width: "16px" }} />
+                                        </button>
+                                    </Drawer>
                                 </div>
-                            </div>                            
+                            </div>
                         </SwiperSlide>
                     )
                 })}

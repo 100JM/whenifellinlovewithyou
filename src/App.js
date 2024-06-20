@@ -4,20 +4,20 @@ import Slider from './components/Slider';
 function App() {
   return (
     <>
-      <div className="w-full h-2/5 py-3 px-7">
+      <div className="w-full h-2/5 py-3 px-8">
         <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)"}}>
           <div className="h-full">
-            <div className="w-full flex justify-center">
+            <div className="text-center">
               <span>우리가 처음 만난 날</span>
             </div>
-            <div className="w-full flex justify-center" style={{color: "#898A8D"}}>
+            <div className="text-center" style={{color: "#898A8D"}}>
               <span>2023년 10월 28일 토요일 🥰</span>
             </div>
           </div>
         </div>
         <Dday />
       </div>
-      <div className="w-full h-3/5 py-3 px-7 pt-0">
+      <div className="w-full h-3/5 py-3 px-8 pt-0">
         <Slider />
       </div>
     </>
