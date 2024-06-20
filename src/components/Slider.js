@@ -21,12 +21,12 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const images = [
-    { image: we2, alt: '인생네컷', center: [37.51004901295591, 127.10884071319168]},
-    { image: we3, alt: '일본 오사카 여행 USJ', center: [34.665756191649585, 135.4323077688899]},
-    { image: we4, alt: '일본 오사카 여행 첫날 숙소', center: [34.67992365241128, 135.50372102642334]},
-    { image: we5, alt: '베트남 나트랑 여행 CCCP coffee', center: [12.240114495011245, 109.19218770138447]},
-    { image: we6, alt: '베트남 나트랑 여행 OLA cafe', center: [12.240335131989028, 109.18687037227834]},
-    { image: we7, alt: '베트남 나트랑 여행 선라이즈 나트랑 비치 호텔', center:[12.250768909463744, 109.19610614159033]},
+    { image: we2, alt: '인생네컷', center: [37.51004901295591, 127.10884071319168] },
+    { image: we3, alt: '일본 오사카 여행 USJ', center: [34.665756191649585, 135.4323077688899] },
+    { image: we4, alt: '일본 오사카 여행 첫날 숙소', center: [34.67992365241128, 135.50372102642334] },
+    { image: we5, alt: '베트남 나트랑 여행 CCCP coffee', center: [12.240114495011245, 109.19218770138447] },
+    { image: we6, alt: '베트남 나트랑 여행 OLA cafe', center: [12.240335131989028, 109.18687037227834] },
+    { image: we7, alt: '베트남 나트랑 여행 선라이즈 나트랑 비치 호텔', center: [12.250768909463744, 109.19610614159033] },
 ]
 
 const Slider = () => {
@@ -49,34 +49,36 @@ const Slider = () => {
     const handleShowMap = (isShow) => {
         setShowMap(isShow);
     };
-    
+
     return (
-        <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
-            <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                slidesPerView={1}
-                loop={true}
-                speed={400}
-                autoplay={{ delay: 3000, disableOnInteraction: true }}
-                navigation={true}
-                className='w-full h-full rounded-xl'
-            >
-                {images.map((i) => {
-                    return (
-                        <SwiperSlide key={i.alt}>
-                            <div className="w-full h-full flex justify-center items-center">
-                                {/* <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl p-1" style={{backgroundColor: "#FFB6C1"}} /> */}
-                                <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
-                                <div className="absolute right-1 bottom-1">
-                                    <button title="위치보기" onClick={() => {handleShowMap(true); handleMapCenter(i.center);}}>
-                                        <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "18px", width: "16px" }} />
-                                    </button>
+        <>
+            <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
+                <Swiper
+                    modules={[Navigation, Pagination, Autoplay]}
+                    slidesPerView={1}
+                    loop={true}
+                    speed={400}
+                    autoplay={{ delay: 3000, disableOnInteraction: false }}
+                    navigation={true}
+                    className='w-full h-full rounded-xl'
+                >
+                    {images.map((i) => {
+                        return (
+                            <SwiperSlide key={i.alt}>
+                                <div className="w-full h-full flex justify-center items-center">
+                                    {/* <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl p-1" style={{backgroundColor: "#FFB6C1"}} /> */}
+                                    <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
+                                    <div className="absolute right-1 bottom-1">
+                                        <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center); }}>
+                                            <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "18px", width: "16px" }} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </SwiperSlide>
-                    )
-                })}
-            </Swiper>
+                            </SwiperSlide>
+                        )
+                    })}
+                </Swiper>
+            </div>
             <Drawer
                 open={showMap}
                 onClose={() => handleShowMap(false)}
@@ -84,9 +86,9 @@ const Slider = () => {
                 style={{ zIndex: "9999" }}
                 sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "50%" } }}
             >
-                <LeafletMaps mapCenter={mapCenter}/>
+                <LeafletMaps mapCenter={mapCenter} />
             </Drawer>
-        </div>
+        </>
     );
 }
 
