@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationDot } from '@fortawesome/free-solid-svg-icons';
 import Drawer from '@mui/material/Drawer';
 
+import mapIcon from '../assets/favicon-32x32.png'
 import we2 from '../assets/we-2.jpeg';
 import we3 from '../assets/we-3.jpeg';
 import we4 from '../assets/we-4.jpeg';
@@ -29,12 +30,12 @@ const images = [
     { image: we7, alt: '🗓️2024년 6월 17일<br />베트남 나트랑<br />SUNRISE NHA TRANG BEACH HOTEL', center: [12.250768909463744, 109.19610614159033] },
 ]
 
-const Slider = () => {
+const Slider = ({ handleShowMapPage }) => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
     const swiperRef = useRef(null);
-    
+
     const handleMapCenter = (center, text) => {
         setMapCenter(center);
         setMapPopup(text);
@@ -88,6 +89,14 @@ const Slider = () => {
                             </SwiperSlide>
                         )
                     })}
+                    <div className="absolute bottom-0 left-2 z-10">
+                        {/* <button className="flex justify-center items-center bg-green-500 rounded-full">
+                            <FontAwesomeIcon icon={faEarthAsia} style={{ color: "#418fde", height: "24px", width: "24px" }} />
+                        </button> */}
+                        <button onClick={() => handleShowMapPage(true)}>
+                            <img src={mapIcon} />
+                        </button>
+                    </div>
                 </Swiper>
             </div>
             <Drawer
