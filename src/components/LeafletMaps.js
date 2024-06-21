@@ -9,7 +9,18 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const LeafletMaps = ({mapCenter, mapPopup}) => {
+const LeafletMaps = ({ mapCenter, mapPopup }) => {
+    const formatAltText = (text) => {
+        return text.split('<br />').map((line, index) => (
+            <span key={index}>
+                {line}
+                <br />
+            </span>
+        ));
+    };
+
+    const popupText = formatAltText(mapPopup);
+
     return (
         <div className="p-3 rounded" style={{ height: '300px', width: '100%' }}>
             <MapContainer center={mapCenter} zoom={17} style={{ height: '100%', width: '100%' }}>
@@ -18,14 +29,23 @@ const LeafletMaps = ({mapCenter, mapPopup}) => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     lang="ko"
                 />
-                <Marker position={mapCenter}>
+                <Marker
+                    position={mapCenter}
+                    eventHandlers={{
+                        add: (e) => {
+                            e.target.openPopup();
+                        }
+                    }}
+                >
                     <Popup>
-                        {mapPopup}
+                        <div className="text-center font-sans">
+                            {popupText}
+                        </div>
                     </Popup>
                 </Marker>
             </MapContainer>
         </div>
-    );    
+    );
 };
 
 export default LeafletMaps;
