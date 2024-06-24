@@ -22,9 +22,9 @@ function App() {
         unmountOnExit
       >
         <div className="w-full h-full">
-          <div className="w-full py-3 px-11" style={{height: "35%", fontSize: "13px"}}>
+          <div className="w-full py-3 px-11 dday" style={{height: "35%"}}>
             <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
-              <div className="h-full">
+              <div className="h-full grid items-center">
                 <div className="text-center">
                   우리가 처음 만난 날
                 </div>

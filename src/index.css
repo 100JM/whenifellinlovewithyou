@@ -34,3 +34,9 @@ body {
   transform: translateX(-100%);
   transition: transform 300ms ease-in-out;
 }
+
+@media (max-height: 765px) {
+  .dday {
+    font-size: 13px;
+  }
+}
