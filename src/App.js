@@ -5,7 +5,6 @@ import MapPages from "./components/MapPage";
 import { CSSTransition } from 'react-transition-group';
 import Dday from "./components/Dday";
 import Slider from './components/Slider';
-import mapIcon from './assets/favicon-32x32.png';
 
 function App() {
   const [showMapPage, setShowMapPage] = useState(false);
@@ -23,7 +22,7 @@ function App() {
         unmountOnExit
       >
         <div className="w-full h-full">
-          <div className="w-full h-2/5 py-3 px-10">
+          <div className="w-full h-2/5 py-3 px-11">
             <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
               <div className="h-full">
                 <div className="text-center">
@@ -36,7 +35,7 @@ function App() {
             </div>
             <Dday />
           </div>
-          <div className="w-full h-3/5 py-3 px-10 pt-0">
+          <div className="w-full h-3/5 py-3 px-11 pt-0">
             <Slider handleShowMapPage={handleShowMapPage}/>
           </div>
         </div>
@@ -47,7 +46,7 @@ function App() {
         classNames="slide"
         unmountOnExit
       >
-        <MapPages />
+        <MapPages handleShowMapPage={handleShowMapPage}/>
       </CSSTransition>
     </>
   );

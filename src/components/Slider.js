@@ -28,7 +28,7 @@ const images = [
     { image: we5, alt: '🗓️2024년 6월 15일<br />베트남 나트랑 CCCP coffee', center: [12.240114495011245, 109.19218770138447] },
     { image: we6, alt: '🗓️2024년 6월 16일<br />베트남 나트랑 OLA cafe', center: [12.240335131989028, 109.18687037227834] },
     { image: we7, alt: '🗓️2024년 6월 17일<br />베트남 나트랑<br />SUNRISE NHA TRANG BEACH HOTEL', center: [12.250768909463744, 109.19610614159033] },
-]
+];
 
 const Slider = ({ handleShowMapPage }) => {
     const [showMap, setShowMap] = useState(false);
@@ -94,7 +94,7 @@ const Slider = ({ handleShowMapPage }) => {
                             <FontAwesomeIcon icon={faEarthAsia} style={{ color: "#418fde", height: "24px", width: "24px" }} />
                         </button> */}
                         <button onClick={() => handleShowMapPage(true)}>
-                            <img src={mapIcon} />
+                            <img src={mapIcon} alt='추억들'/>
                         </button>
                     </div>
                 </Swiper>
@@ -112,4 +112,5 @@ const Slider = ({ handleShowMapPage }) => {
     );
 }
 
+export const memories = images;
 export default Slider;
