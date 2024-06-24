@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 const MapPages = ({ handleShowMapPage }) => {
     return (
         <div style={{ height: '100%', width: '100%' }}>
-            <MapContainer center={[37.378129052605125, 123.60549110411648]} zoom={2} style={{ height: '100%', width: '100%' }}>
+            <MapContainer center={[37.378129052605125, 123.60549110411648]} zoom={2} style={{ height: '100%', width: '100%' }} attributionControl={false}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -35,6 +35,20 @@ body {
   transition: transform 300ms ease-in-out;
 }
 
+.leaflet-marker-icon {
+  border-radius: 8px;
+}
+
+.slideDiv>div:not(.locationBtn) {
+  height: 100%;
+  width: 100%;
+}
+
+.slideDiv>div>div:not(.locationBtn) {
+  height: 100%;
+  width: 100%;
+}
+
 @media (max-height: 765px) {
   .dday {
     font-size: 13px;
