@@ -4,7 +4,6 @@ import L from 'leaflet';
 
 import CustomButtonControl from './CustomButtonControl';
 import MapMarker from './MapMarker';
-import { memories } from './Slider';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -13,7 +12,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const MapPages = ({ handleShowMapPage }) => {
+const MapPages = ({ handleShowMapPage, memories }) => {
     return (
         <div style={{ height: '100%', width: '100%' }}>
             <MapContainer center={[37.378129052605125, 123.60549110411648]} zoom={3} style={{ height: '100%', width: '100%' }} attributionControl={false}>
