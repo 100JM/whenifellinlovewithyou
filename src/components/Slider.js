@@ -4,13 +4,15 @@ import LeafletMaps from './LeafletMaps';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLocationDot } from '@fortawesome/free-solid-svg-icons';
 import Drawer from '@mui/material/Drawer';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { Controlled as ControlledZoom } from 'react-medium-image-zoom'
-import Zoom from 'react-medium-image-zoom';
 import 'react-medium-image-zoom/dist/styles.css';
 import mapIcon from '../assets/favicon-32x32.png'
+import earthIcon from '../assets/earth-32x32.png';
+import plusIcon from '../assets/plus-32x32.png';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -57,7 +59,7 @@ const Slider = ({ handleShowMapPage, memories }) => {
     const handleSwiperInit = (swiper) => {
         swiperRef.current = swiper;
     };
-    
+
     return (
         <>
             <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -76,23 +78,31 @@ const Slider = ({ handleShowMapPage, memories }) => {
                         return (
                             <SwiperSlide key={i.alt}>
                                 <div className="w-full h-full flex justify-center items-center slideDiv">
-                                    <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false}  onZoomChange={handleZoomed}>
+                                    <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false} onZoomChange={handleZoomed}>
                                         <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
                                     </ControlledZoom>
-                                    <div className="absolute right-1 bottom-1 locationBtn">
+                                    <div className="absolute left-2 bottom-0 locationBtn">
                                         <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt); }}>
-                                            <FontAwesomeIcon icon={faLocationDot} style={{ color: "#FF6347", height: "24px", width: "20px" }} />
+                                            <img src={mapIcon} alt='위치' />
                                         </button>
                                     </div>
                                 </div>
                             </SwiperSlide>
                         )
                     })}
-                    <div className="absolute bottom-0 left-2 z-10">
-                        <button onClick={() => handleShowMapPage(true)}>
-                            <img src={mapIcon} alt='추억들'/>
-                        </button>
-                    </div>
+                    <SpeedDial
+                        ariaLabel="SpeedDial"
+                        icon={<SpeedDialIcon />}
+                        className="absolute bottom-1 -right-1"
+                        sx={{
+                            "& button" : {width: "36px", height: "36px"},
+                        }}
+                        direction="up"
+                        FabProps={{style: {backgroundColor: "#FFB6C1"}}}
+                    >
+                        <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => handleShowMapPage(true)}/>
+                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" />
+                    </SpeedDial>
                 </Swiper>
             </div>
             <Drawer
