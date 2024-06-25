@@ -40,7 +40,7 @@ const Slider = ({ handleShowMapPage, memories }) => {
     };
 
     const handleSlideChange = (swiper) => {
-        setActiveIndex(swiper.activeIndex);
+        setActiveIndex(swiper.realIndex);
         setIsZoomed(false);
     };
 
@@ -59,14 +59,15 @@ const Slider = ({ handleShowMapPage, memories }) => {
     const handleSwiperInit = (swiper) => {
         swiperRef.current = swiper;
     };
-
+    console.log(activeIndex);
     return (
         <>
             <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
                 <Swiper
                     modules={[Navigation, Pagination, Autoplay]}
                     slidesPerView={1}
-                    loop={true}
+                    slidesPerGroup={1}
+                    loop={memories.length > 1}
                     speed={400}
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
                     navigation={true}
