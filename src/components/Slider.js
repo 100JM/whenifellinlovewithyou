@@ -96,9 +96,6 @@ const Slider = ({ handleShowMapPage }) => {
                         )
                     })}
                     <div className="absolute bottom-0 left-2 z-10">
-                        {/* <button className="flex justify-center items-center bg-green-500 rounded-full">
-                            <FontAwesomeIcon icon={faEarthAsia} style={{ color: "#418fde", height: "24px", width: "24px" }} />
-                        </button> */}
                         <button onClick={() => handleShowMapPage(true)}>
                             <img src={mapIcon} alt='추억들'/>
                         </button>

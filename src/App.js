@@ -22,7 +22,7 @@ function App() {
         unmountOnExit
       >
         <div className="w-full h-full">
-          <div className="w-full py-3 px-11 dday" style={{height: "35%"}}>
+          <div className="w-full py-3 px-10 dday" style={{height: "35%"}}>
             <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
               <div className="h-full grid items-center">
                 <div className="text-center">
@@ -35,7 +35,7 @@ function App() {
             </div>
             <Dday />
           </div>
-          <div className="w-full py-3 px-11 pt-0" style={{height: "65%"}}>
+          <div className="w-full py-3 px-10 pt-0" style={{height: "65%"}}>
             <Slider handleShowMapPage={handleShowMapPage}/>
           </div>
         </div>
