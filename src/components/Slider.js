@@ -108,7 +108,7 @@ const Slider = ({ handleShowMapPage, memories }) => {
                         FabProps={{style: {backgroundColor: "#FFB6C1"}}}
                     >
                         <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => handleShowMapPage(true)} />
-                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowAdd(true)} />
+                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" />
                     </SpeedDial>
                 </Swiper>
             </div>
