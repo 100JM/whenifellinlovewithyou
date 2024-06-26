@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import LeafletMaps from './LeafletMaps';
-import AddMemory from './AddMemory';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -19,9 +18,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ handleShowMapPage, memories }) => {
+const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
     const [showMap, setShowMap] = useState(false);
-    const [showAdd, setShowAdd] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
     const [isZoomed, setIsZoomed] = useState(false);
@@ -39,10 +37,6 @@ const Slider = ({ handleShowMapPage, memories }) => {
 
     const handleShowMap = (isShow) => {
         setShowMap(isShow);
-    };
-
-    const handleShowAdd = (isShow) => {
-        setShowAdd(isShow);
     };
 
     const handleSlideChange = (swiper) => {
@@ -108,7 +102,7 @@ const Slider = ({ handleShowMapPage, memories }) => {
                         FabProps={{style: {backgroundColor: "#FFB6C1"}}}
                     >
                         <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => handleShowMapPage(true)} />
-                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" />
+                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowDialog(true)} />
                     </SpeedDial>
                 </Swiper>
             </div>
@@ -120,15 +114,6 @@ const Slider = ({ handleShowMapPage, memories }) => {
                 sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "300px" } }}
             >
                 <LeafletMaps mapCenter={mapCenter} mapPopup={mapPopup} />
-            </Drawer>
-            <Drawer
-                open={showAdd}
-                onClose={() => handleShowAdd(false)}
-                anchor={"bottom"}
-                style={{ zIndex: "9999" }}
-                sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "100%", height: "70%" } }}
-            >
-                <AddMemory />
             </Drawer>
         </>
     );
