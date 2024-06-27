@@ -44,10 +44,6 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
         setIsZoomed(false);
     };
 
-    const checkPassword = () => {
-
-    }
-
     useEffect(() => {
         if (showMap || isZoomed) {
             if (swiperRef.current && swiperRef.current.autoplay) {
