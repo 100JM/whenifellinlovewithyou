@@ -42,6 +42,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const [showAddrSearchForm, setShowAddrSearchForm] = useState(false);
     const [searchPosition, setSearchPosition] = useState([37.545385, 126.985589]);
     const [searchAddrList, setSearchAddrList] = useState([]);
+    const [selectedAddr, setSelectedAddr] = useState();
     const [isClick, setIsClick] = useState('');
 
     const memoriesRef = useRef({});
@@ -51,7 +52,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const closeDialog = () => {
         handleShowDialog(false);
         setUploadedFile(null);
-    }
+    };
 
     const setMemoriesValue = (name, value) => {
         memoriesRef.current[name] = value;
@@ -62,29 +63,48 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const handleFile = () => {
         fileInputRef.current.value = '';
         fileInputRef.current.click();
-    }
+    };
 
     const handleUploadedFile = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             setUploadedFile(e.target.files);
         }
-    }
+    };
 
     const handleAddrClick = (key, lat, lon) => {
         setIsClick(key);
         setSearchPosition([lat, lon]);
-    }
+    };
+
+    const handleSelectAddr = (id) => {
+        console.log(id);
+        if(!id) {
+            alert('주소를 선택해주세요.');
+            return;
+        }
+
+        const selected = searchAddrList.find((a) => {
+            return a.place_id === id;
+        })
+
+        setSelectedAddr(selected);
+    };
 
     const handleEnter = (e) => {
         if(e.key === 'Enter' || e.key === 13) {
             addrSearchBtnRef.current.click();
         }
-    }
+    };
 
     const handleAddrSearchForm = (isShow) => {
         setSearchAddrList([]);
         setShowAddrSearchForm(isShow);
-    }
+        setIsClick('');
+        //줌설정
+        if(!selectedAddr) {
+            setSearchPosition([37.545385, 126.985589]);
+        }
+    };
 
     const handleSearchQuery = (e) => {
         setSearchQuery(e);
@@ -110,7 +130,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             console.error('Error fetching data from Nominatim:', error);
         }
     };
-    console.log(searchPosition);
+    console.log(selectedAddr);
     return (
         <Dialog
             open={isOpen}
@@ -144,12 +164,12 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                             <span>📷사진</span>
                         </div>
                     </div>
-                    <div className="w-full h-8 flex border rounded items-center">
+                    <div className="w-full h-11 flex border rounded items-center">
                         <input type="file" className="hidden" accept="image/*" ref={fileInputRef} onChange={(e) => handleUploadedFile(e)} />
                         <div className="w-16 h-full text-center border-r flex items-center justify-center">
                             <button className="w-full h-full" onClick={handleFile}>💾</button>
                         </div>
-                        <div className="flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1" style={{ width: "calc(100% - 4rem)" }}>
+                        <div className="h-full flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1" style={{ width: "calc(100% - 4rem)" }}>
                             <span>{uploadedFile && uploadedFile.length > 0 ? uploadedFile[0].name : '업로드된 사진이 없습니다.'}</span>
                         </div>
                     </div>
@@ -165,7 +185,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                         </div>
                     </div>
                     <textarea className="w-full px-1 min-h-16 comment" />
-                    <div className="border-b w-full h-8 flex items-center">
+                    <div className="border-b w-full h-11 flex items-center">
                         <button className="w-full h-full flex justify-between items-center" onClick={() => { handleAddrSearchForm(true) }}>
                             <span>🗺️위치</span>
                             <FontAwesomeIcon className="text-gray-400" icon={faAngleRight} />
@@ -194,11 +214,11 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                         </MapContainer>
                                     </div>
                                     <div className="float-end">
-                                        <button className="px-4 mt-2 border rounded">저장</button>
+                                        <button className="px-4 mt-2 border rounded" onClick={() => handleSelectAddr(isClick)}>저장</button>
                                     </div>
                                 </div>
                                 {searchAddrList.length > 0 &&
-                                    <div className="w-full overflow-y-auto" style={{maxHeight: "200px"}}>
+                                    <div className="w-full pt-2 overflow-y-auto" style={{maxHeight: "200px"}}>
                                         {searchAddrList.map((i) => {
                                             return (
                                                 <div 
@@ -222,7 +242,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                             <span>🤫패스워드</span>
                         </div>
                     </div>
-                    <div className="w-full h-8 flex items-center">
+                    <div className="w-full h-11 flex items-center">
                         <input type="password" className="w-full h-full border rounded px-1" placeholder="****" />
                     </div>
                 </div>
