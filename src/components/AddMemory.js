@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import axios from 'axios';
 
-import ChangeView from './AddrSearchMap';
+import ChangeView from './ChangeView';
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -134,7 +134,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                 className="w-full"
                                 sx={{
                                     "& .MuiInputBase-input": { fontFamily: "Jua" },
-                                    "& .MuiOutlinedInput-root": { height: "36px" }
+                                    "& .MuiOutlinedInput-root": { height: "42px" }
                                 }}
                             />
                         </LocalizationProvider>
