@@ -29,7 +29,7 @@ function App() {
   const [showMapPage, setShowMapPage] = useState(false);
   const [memories, setMemories] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
-
+  
   useEffect(() => {
     setMemories(images);
   }, []);
