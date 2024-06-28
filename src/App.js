@@ -32,6 +32,7 @@ function App() {
   
   useEffect(() => {
     setMemories(images);
+
   }, []);
 
   const handleShowMapPage = (isShow) => {

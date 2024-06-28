@@ -1,9 +1,9 @@
 import { useMap } from 'react-leaflet';
 
-function ChangeView({ center }) {
+function ChangeView({ searchPosition }) {
     const map = useMap();
-    map.setView(center);
-    // map.setZoom(16);
+    map.setView(searchPosition.center);
+    map.setZoom(searchPosition.zoom);
     return null;
 }
 
