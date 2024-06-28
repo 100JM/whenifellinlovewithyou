@@ -47,6 +47,8 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const [searchAddrList, setSearchAddrList] = useState([]);
     const [selectedAddr, setSelectedAddr] = useState();
     const [isClick, setIsClick] = useState('');
+    const [showMapConfirm, setShowMapConfirm] = useState(false);
+    const [mapKind, setMapKind] = useState('');
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -86,13 +88,23 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         }
     };
 
+    const handleMapComfirm = (isShow) => {
+        setShowMapConfirm(isShow);
+    };
+
+    const handleMapkind = (value) => {
+        setMapKind(value);
+        handleMapComfirm(false);
+        handleAddrSearchForm(true);
+    }
+    
     const handleAddrClick = (key, lat, lon) => {
         setIsClick(key);
         setSearchPosition((prev) => {
             return {
                 ...prev,
                 center: [lat, lon],
-                zoom: 18
+                zoom: (mapKind === '해외' ? 18 : 4)
             }
         });
     };
@@ -104,10 +116,15 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         }
 
         const selected = searchAddrList.find((a) => {
-            return a.place_id === id;
-        })
+            if(mapKind === '해외') {
+                return a.place_id === id;
+            }else {
+                return a.id === id;
+            }
+        });
 
         setSelectedAddr(selected);
+        handleAddrSearchForm(false);
     };
 
     const handleEnter = (e) => {
@@ -121,18 +138,24 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         setShowAddrSearchForm(isShow);
         setIsClick('');
 
-        if (!selectedAddr) {
-            setSearchPosition((prev) => {
-                return {
-                    ...prev,
-                    center: [37.545385, 126.985589],
-                    zoom: 10
-                }
-            });
-        }
+        setSearchPosition((prev) => {
+            return {
+                ...prev,
+                center: [37.545385, 126.985589],
+                zoom: 10
+            }
+        });
     };
+    
+    const handleSearch = () => {
+        if(mapKind === '해외') {
+            nominatimSearch();
+        }else {
+            kakaoSearch();
+        }
+    }
 
-    const handleSearch = async () => {
+    const nominatimSearch = async () => {
         try {
             const response = await axios.get('https://nominatim.openstreetmap.org/search', {
                 params: {
@@ -150,6 +173,30 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             setSearchAddrList(response.data);
         } catch (error) {
             console.error('Error fetching data from Nominatim:', error);
+        }
+    };
+    
+    const kakaoSearch = async () => {
+        try {
+            const keywordResponse = await axios.get('https://dapi.kakao.com/v2/local/search/keyword.json', {
+                params: {
+                    query: addrSearchInputRef.current.value,
+                },
+                headers: {
+                    Authorization: `KakaoAK ${process.env.REACT_APP_KAKAO_REST_API_KEY}`,
+                },
+            });
+
+            if (keywordResponse.data.documents.length === 0) {
+                alert('검색 결과가 없습니다🥲');
+                return;
+            }
+
+            const keywordResult = keywordResponse.data.documents;
+
+            setSearchAddrList(keywordResult);
+        } catch (error) {
+            console.error('Error fetching data from Kakao API:', error);
         }
     };
 
@@ -210,7 +257,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                         <textarea className="w-full h-full px-1 comment" />
                     </div>
                     <div className="border-b w-full h-11 flex items-center">
-                        <button className="w-full h-full flex justify-between items-center" onClick={() => { handleAddrSearchForm(true) }}>
+                        <button className="w-full h-full flex justify-between items-center" onClick={() => { handleMapComfirm(true) }}>
                             <span>🗺️위치</span>
                             <FontAwesomeIcon className="text-gray-400" icon={faAngleRight} />
                         </button>
@@ -228,16 +275,20 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                 </div>
                                 <div className="w-full">
                                     <div style={{ height: '200px', width: '100%', marginTop: "8px" }}>
-                                        {/* <MapContainer center={searchPosition.center} zoom={searchPosition.zoom} style={{ height: '100%', width: '100%', borderRadius: "4px" }} attributionControl={false}>
-                                            <ChangeView searchPosition={searchPosition} />
-                                            <TileLayer
-                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                                lang="ko"
-                                            />
-                                            <Marker position={searchPosition.center}></Marker>
-                                        </MapContainer> */}
-                                        <KaKaoMap searchPosition={searchPosition}/>
+                                        {mapKind === '해외' &&
+                                            <MapContainer center={searchPosition.center} zoom={searchPosition.zoom} style={{ height: '100%', width: '100%', borderRadius: "4px" }} attributionControl={false}>
+                                                <ChangeView searchPosition={searchPosition} />
+                                                <TileLayer
+                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                    lang="ko"
+                                                />
+                                                <Marker position={searchPosition.center}></Marker>
+                                            </MapContainer>
+                                        }
+                                        {mapKind === '국내' &&
+                                            <KaKaoMap searchPosition={searchPosition} />
+                                        }
                                     </div>
                                     <div className="float-end">
                                         <button className="px-4 mt-2 border rounded" onClick={() => handleSelectAddr(isClick)}>저장</button>
@@ -247,14 +298,23 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                     <div className="w-full pt-2 overflow-y-auto" style={{ maxHeight: "200px" }}>
                                         {searchAddrList.map((i) => {
                                             return (
+                                                mapKind === '해외' ?
                                                 <div
                                                     key={i.place_id}
-                                                    className={`w-full overflow-hidden text-ellipsis whitespace-nowrap border-b cursor-pointer hover:bg-gray-100 ${(i.place_id === isClick) ? ' bg-gray-100' : ''}`}
+                                                    className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.place_id === isClick) ? ' bg-gray-100' : ''}`}
                                                     onClick={() => handleAddrClick(i.place_id, i.lat, i.lon)}
                                                 >
-                                                    {i.name}
-                                                    <br />
-                                                    {i.display_name.substring(i.display_name.indexOf(',') + 1).trim()}
+                                                    <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.name}</div>
+                                                    <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.display_name.substring(i.display_name.indexOf(',') + 1).trim()}</div>
+                                                </div>
+                                                :
+                                                <div
+                                                    key={i.id}
+                                                    className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.id === isClick) ? ' bg-gray-100' : ''}`}
+                                                    onClick={() => handleAddrClick(i.id, i.y, i.x)}
+                                                >
+                                                    <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.place_name}</div>
+                                                    <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.address_name}</div>
                                                 </div>
                                             );
                                         })}
@@ -279,6 +339,21 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                     </div>
                 </div>
             </DialogContent>
+            <Dialog
+                open={showMapConfirm}
+                onClose={() => handleMapComfirm(false)}
+                maxWidth="xs"
+                fullWidth={true}
+            >
+                <DialogContent style={{ padding: "10px 10px" }}>
+                    <div className="w-full h-full">
+                        <div className="w-full h-11 flex justify-around items-center border rounded">
+                            <button className="w-1/2 h-full border-r" onClick={() => handleMapkind('국내')}>🚌국내</button>
+                            <button className="w-1/2 h-full" onClick={() => handleMapkind('해외')}>🛫해외</button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </Dialog>
     );
 };
