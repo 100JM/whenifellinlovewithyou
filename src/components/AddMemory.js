@@ -9,7 +9,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
 import dayjs, { Dayjs } from 'dayjs';
 import Dialog from '@mui/material/Dialog';
@@ -49,9 +49,11 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const [isClick, setIsClick] = useState('');
     const [showMapConfirm, setShowMapConfirm] = useState(false);
     const [mapKind, setMapKind] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
+    const passwordInputRef = useRef();
     const addrSearchBtnRef = useRef();
     const addrSearchInputRef = useRef();
 
@@ -61,6 +63,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
 
         setSearchAddrList([]);
         setIsClick('');
+        setSelectedAddr();
 
         setSearchPosition((prev) => {
             return {
@@ -96,7 +99,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         setMapKind(value);
         handleMapComfirm(false);
         handleAddrSearchForm(true);
-    }
+    };
     
     const handleAddrClick = (key, lat, lon) => {
         setIsClick(key);
@@ -127,6 +130,10 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         handleAddrSearchForm(false);
     };
 
+    const hadnleResetAddr = () => {
+        setSelectedAddr();
+    }
+
     const handleEnter = (e) => {
         if (e.key === 'Enter' || e.key === 13) {
             addrSearchBtnRef.current.click();
@@ -156,6 +163,9 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     }
 
     const nominatimSearch = async () => {
+        setIsLoading(true);
+        setSearchAddrList([]);
+
         try {
             const response = await axios.get('https://nominatim.openstreetmap.org/search', {
                 params: {
@@ -168,15 +178,21 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
 
             if (response.data.length === 0) {
                 alert('검색 결과가 없습니다🥲');
+                return;
             }
 
             setSearchAddrList(response.data);
         } catch (error) {
             console.error('Error fetching data from Nominatim:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
     
     const kakaoSearch = async () => {
+        setIsLoading(true);
+        setSearchAddrList([]);
+
         try {
             const keywordResponse = await axios.get('https://dapi.kakao.com/v2/local/search/keyword.json', {
                 params: {
@@ -186,7 +202,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                     Authorization: `KakaoAK ${process.env.REACT_APP_KAKAO_REST_API_KEY}`,
                 },
             });
-
+            
             if (keywordResponse.data.documents.length === 0) {
                 alert('검색 결과가 없습니다🥲');
                 return;
@@ -197,7 +213,25 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             setSearchAddrList(keywordResult);
         } catch (error) {
             console.error('Error fetching data from Kakao API:', error);
+        } finally {
+            setIsLoading(false);
         }
+    };
+    
+    const handleSubmitMemory = () => {
+        const uploadPassword = process.env.REACT_APP_PASSWORD;
+
+        if(!uploadedFile) {
+            alert('사진을 등록해주세요.');
+            return;
+        }
+
+        if(!passwordInputRef || passwordInputRef.current.value !== uploadPassword){
+            alert('패스워드를 확인해주세요.');
+            return;
+        }
+
+        alert('upload!');
     };
 
     return (
@@ -256,10 +290,15 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                     <div className="w-full h-16">
                         <textarea className="w-full h-full px-1 comment" />
                     </div>
-                    <div className="border-b w-full h-11 flex items-center">
-                        <button className="w-full h-full flex justify-between items-center" onClick={() => { handleMapComfirm(true) }}>
-                            <span>🗺️위치</span>
-                            <FontAwesomeIcon className="text-gray-400" icon={faAngleRight} />
+                    <div className="mt-2">
+                        <span>🗺️위치</span>
+                    </div>
+                    <div className="border rounded w-full h-11 flex items-center">
+                        <button className="w-16 h-full text-center border-r" onClick={hadnleResetAddr}>
+                            <FontAwesomeIcon icon={faArrowRotateLeft} />
+                        </button>
+                        <button className="h-full text-ellipsis whitespace-nowrap overflow-hidden px-2 text-slate-500 text-end" style={{width: "calc(100% - 4rem)"}} onClick={() => { handleMapComfirm(true) }}>
+                            {(selectedAddr) ? ((selectedAddr.place_name) ? `🚩${selectedAddr.place_name}` : `🚩${selectedAddr.name}`) : '검색🔍'}
                         </button>
                         <Drawer
                             open={showAddrSearchForm}
@@ -294,6 +333,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                         <button className="px-4 mt-2 border rounded" onClick={() => handleSelectAddr(isClick)}>저장</button>
                                     </div>
                                 </div>
+                                {isLoading && <div className="w-full pt-2 overflow-y-auto text-center">검색중...</div>}
                                 {searchAddrList.length > 0 &&
                                     <div className="w-full pt-2 overflow-y-auto" style={{ maxHeight: "200px" }}>
                                         {searchAddrList.map((i) => {
@@ -329,12 +369,12 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                         </div>
                     </div>
                     <div className="w-full h-11 flex items-center">
-                        <input type="password" className="w-full h-full border rounded px-1" placeholder="****" />
+                        <input type="password" className="w-full h-full border rounded px-1" placeholder="****" ref={passwordInputRef} />
                     </div>
                     <div className="mt-2">
                         <div className="w-full h-11 flex justify-end items-center">
-                            <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2">취소</button>
-                            <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }}>저장</button>
+                            <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={closeDialog}>취소</button>
+                            <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleSubmitMemory}>저장</button>
                         </div>
                     </div>
                 </div>
