@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import axios from 'axios';
+import { addDocumentWithImage } from '../firestore';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
@@ -74,12 +75,6 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         });
     };
 
-    const setMemoriesValue = (name, value) => {
-        memoriesRef.current[name] = value;
-
-        console.log(memoriesRef.current);
-    };
-
     const handleFile = () => {
         fileInputRef.current.value = '';
         fileInputRef.current.click();
@@ -100,7 +95,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         handleMapComfirm(false);
         handleAddrSearchForm(true);
     };
-    
+
     const handleAddrClick = (key, lat, lon) => {
         setIsClick(key);
         setSearchPosition((prev) => {
@@ -119,9 +114,9 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
         }
 
         const selected = searchAddrList.find((a) => {
-            if(mapKind === '해외') {
+            if (mapKind === '해외') {
                 return a.place_id === id;
-            }else {
+            } else {
                 return a.id === id;
             }
         });
@@ -153,11 +148,11 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             }
         });
     };
-    
+
     const handleSearch = () => {
-        if(mapKind === '해외') {
+        if (mapKind === '해외') {
             nominatimSearch();
-        }else {
+        } else {
             kakaoSearch();
         }
     }
@@ -188,7 +183,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             setIsLoading(false);
         }
     };
-    
+
     const kakaoSearch = async () => {
         setIsLoading(true);
         setSearchAddrList([]);
@@ -202,7 +197,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                     Authorization: `KakaoAK ${process.env.REACT_APP_KAKAO_REST_API_KEY}`,
                 },
             });
-            
+
             if (keywordResponse.data.documents.length === 0) {
                 alert('검색 결과가 없습니다🥲');
                 return;
@@ -217,21 +212,35 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             setIsLoading(false);
         }
     };
-    
-    const handleSubmitMemory = () => {
+
+    const handleSubmitMemory = async () => {
         const uploadPassword = process.env.REACT_APP_PASSWORD;
 
-        if(!uploadedFile) {
+        if (!uploadedFile) {
             alert('사진을 등록해주세요.');
             return;
         }
 
-        if(!passwordInputRef || passwordInputRef.current.value !== uploadPassword){
+        if (!passwordInputRef || passwordInputRef.current.value !== uploadPassword) {
             alert('패스워드를 확인해주세요.');
             return;
         }
 
-        alert('upload!');
+        const data = {
+            date: memoriesRef.current.date.value,
+            alt: memoriesRef.current.alt.value.replace(/\n/g, '<br />'),
+            center: selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []
+        }
+
+        try {
+            await addDocumentWithImage(data, uploadedFile[0]);
+            alert('새로운 추억이 등록되었습니다🤍');
+        } catch (error) {
+            console.error("Error adding document:", error);
+            alert('오류 발생🥲 남자친구에게 문의하세요');
+        } finally {
+            closeDialog();
+        }
     };
 
     return (
@@ -253,7 +262,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                 dayOfWeekFormatter={(day) => ['일', '월', '화', '수', '목', '금', '토'][day]}
                                 defaultValue={dayjs(today)}
                                 inputRef={(el) => { memoriesRef.current['date'] = el }}
-                                onChange={(newValue) => setMemoriesValue('date', dayjs(newValue).format('YYYY-MM-DD'))}
+                                // onChange={(newValue) => setMemoriesValue('date', dayjs(newValue).format('YYYY-MM-DD'))}
                                 className="w-full"
                                 sx={{
                                     "& .MuiInputBase-input": { fontFamily: "Jua" },
@@ -288,17 +297,19 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                         </div>
                     </div>
                     <div className="w-full h-16">
-                        <textarea className="w-full h-full px-1 comment" />
+                        <textarea className="w-full h-full px-1 comment" ref={(el) => { memoriesRef.current['alt'] = el }} />
                     </div>
                     <div className="mt-2">
                         <span>🗺️위치</span>
                     </div>
                     <div className="border rounded w-full h-11 flex items-center">
-                        <button className="w-16 h-full text-center border-r" onClick={hadnleResetAddr}>
+                        <button className="w-16 h-full flex justify-center items-center border-r" onClick={hadnleResetAddr}>
                             <FontAwesomeIcon icon={faArrowRotateLeft} />
                         </button>
-                        <button className="h-full text-ellipsis whitespace-nowrap overflow-hidden px-2 text-slate-500 text-end" style={{width: "calc(100% - 4rem)"}} onClick={() => { handleMapComfirm(true) }}>
-                            {(selectedAddr) ? ((selectedAddr.place_name) ? `🚩${selectedAddr.place_name}` : `🚩${selectedAddr.name}`) : '검색🔍'}
+                        <button className="h-full px-2 text-slate-500 flex justify-end items-center" style={{ width: "calc(100% - 4rem)" }} onClick={() => { handleMapComfirm(true) }}>
+                            <span className="text-ellipsis whitespace-nowrap overflow-hidden">
+                                {(selectedAddr) ? ((selectedAddr.place_name) ? `🚩${selectedAddr.place_name}` : `🚩${selectedAddr.name}`) : '검색🔍'}
+                            </span>
                         </button>
                         <Drawer
                             open={showAddrSearchForm}
@@ -339,23 +350,23 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                                         {searchAddrList.map((i) => {
                                             return (
                                                 mapKind === '해외' ?
-                                                <div
-                                                    key={i.place_id}
-                                                    className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.place_id === isClick) ? ' bg-gray-100' : ''}`}
-                                                    onClick={() => handleAddrClick(i.place_id, i.lat, i.lon)}
-                                                >
-                                                    <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.name}</div>
-                                                    <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.display_name.substring(i.display_name.indexOf(',') + 1).trim()}</div>
-                                                </div>
-                                                :
-                                                <div
-                                                    key={i.id}
-                                                    className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.id === isClick) ? ' bg-gray-100' : ''}`}
-                                                    onClick={() => handleAddrClick(i.id, i.y, i.x)}
-                                                >
-                                                    <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.place_name}</div>
-                                                    <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.address_name}</div>
-                                                </div>
+                                                    <div
+                                                        key={i.place_id}
+                                                        className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.place_id === isClick) ? ' bg-gray-100' : ''}`}
+                                                        onClick={() => handleAddrClick(i.place_id, i.lat, i.lon)}
+                                                    >
+                                                        <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.name}</div>
+                                                        <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.display_name.substring(i.display_name.indexOf(',') + 1).trim()}</div>
+                                                    </div>
+                                                    :
+                                                    <div
+                                                        key={i.id}
+                                                        className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.id === isClick) ? ' bg-gray-100' : ''}`}
+                                                        onClick={() => handleAddrClick(i.id, i.y, i.x)}
+                                                    >
+                                                        <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.place_name}</div>
+                                                        <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.address_name}</div>
+                                                    </div>
                                             );
                                         })}
                                     </div>

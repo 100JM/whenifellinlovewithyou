@@ -21,23 +21,28 @@ const MapPages = ({ handleShowMapPage, memories }) => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     language="ko"
                 />
-                {memories.map((m) => {
-                    const customIcon = new L.Icon({
-                        iconUrl: m.image,
-                        iconSize: [50, 82],
-                        iconAnchor: [24, 82],
-                        popupAnchor: [2, -68],
-                    });
+                {
+                    memories.filter((i) => {
+                        return i.center.length > 0;
+                    }).map((m) => {
+                        const customIcon = new L.Icon({
+                            iconUrl: m.image,
+                            iconSize: [50, 82],
+                            iconAnchor: [24, 82],
+                            popupAnchor: [2, -68],
+                        });
+                        
+                        return (
+                            <MapMarker
+                                key={m.alt}
+                                position={m.center}
+                                icon={customIcon}
+                                alt={`🗓️${m.date}<br />${m.alt}`}
+                            />
+                        );
+                    })
                     
-                    return (
-                        <MapMarker
-                            key={m.alt}
-                            position={m.center}
-                            icon={customIcon}
-                            alt={m.alt}
-                        />
-                    );
-                })}
+                }
                 <CustomButtonControl handleShowMapPage={handleShowMapPage} />
             </MapContainer>
         </div>

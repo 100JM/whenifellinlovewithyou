@@ -30,9 +30,9 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
         setIsZoomed(zoomed);
     }, []);
 
-    const handleMapCenter = (center, text) => {
+    const handleMapCenter = (center, text, date) => {
         setMapCenter(center);
-        setMapPopup(text);
+        setMapPopup(`🗓️${date}<br />${text}`);
     }
 
     const handleShowMap = (isShow) => {
@@ -59,7 +59,13 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
     const handleSwiperInit = (swiper) => {
         swiperRef.current = swiper;
     };
-    
+
+    function convertDateStringToDate(dateString) {
+        const formattedDateString = dateString.replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1-$2-$3');
+
+        return new Date(formattedDateString);
+    }
+
     return (
         <>
             <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -75,31 +81,40 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
                     onInit={handleSwiperInit}
                     onSlideChange={handleSlideChange}
                 >
-                    {memories.map((i, index) => {
-                        return (
-                            <SwiperSlide key={i.alt}>
-                                <div className="w-full h-full flex justify-center items-center slideDiv">
-                                    <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false} onZoomChange={handleZoomed}>
-                                        <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
-                                    </ControlledZoom>
-                                    <div className="absolute left-2 bottom-0 locationBtn">
-                                        <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt); }}>
-                                            <img src={mapIcon} alt='위치' />
-                                        </button>
+                    {memories.length === 0 &&
+                        <SwiperSlide>
+                            <div className="w-full h-full flex justify-center items-center slideDiv">
+                                등록된 추억이 없어요🥲
+                            </div>
+                        </SwiperSlide>
+                    }
+                    {memories.length > 0 &&
+                        memories.map((i, index) => {
+                            return (
+                                <SwiperSlide key={i.alt}>
+                                    <div className="w-full h-full flex justify-center items-center slideDiv">
+                                        <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false} onZoomChange={handleZoomed}>
+                                            <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
+                                        </ControlledZoom>
+                                        <div className="absolute left-2 bottom-0 locationBtn">
+                                            <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt, i.date); }}>
+                                                <img src={mapIcon} alt='위치' />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            </SwiperSlide>
-                        )
-                    })}
+                                </SwiperSlide>
+                            )
+                        })
+                    }
                     <SpeedDial
                         ariaLabel="SpeedDial"
                         icon={<SpeedDialIcon />}
                         className="absolute bottom-1 -right-1"
                         sx={{
-                            "& button" : {width: "36px", height: "36px"},
+                            "& button": { width: "36px", height: "36px" },
                         }}
                         direction="up"
-                        FabProps={{style: {backgroundColor: "#FFB6C1"}}}
+                        FabProps={{ style: { backgroundColor: "#FFB6C1" } }}
                     >
                         <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => handleShowMapPage(true)} />
                         <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowDialog(true)} />
@@ -113,7 +128,13 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
                 style={{ zIndex: "9999" }}
                 sx={{ "& .MuiDrawer-paperAnchorBottom": { maxHeight: "300px" } }}
             >
-                <LeafletMaps mapCenter={mapCenter} mapPopup={mapPopup} />
+                {mapCenter && mapCenter.length > 0 ?
+                    <LeafletMaps mapCenter={mapCenter} mapPopup={mapPopup} />
+                    :
+                    <div className="p-3 rounded flex justify-center items-center" style={{ height: '300px', width: '100%' }}>
+                        위치 정보가 없습니다🥲
+                    </div>
+                }
             </Drawer>
         </>
     );
