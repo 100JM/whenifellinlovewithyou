@@ -18,7 +18,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
+const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading }) => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
@@ -60,12 +60,6 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
         swiperRef.current = swiper;
     };
 
-    function convertDateStringToDate(dateString) {
-        const formattedDateString = dateString.replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1-$2-$3');
-
-        return new Date(formattedDateString);
-    }
-
     return (
         <>
             <div className="w-full h-full rounded-xl flex justify-center items-center text-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
@@ -81,17 +75,24 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog }) => {
                     onInit={handleSwiperInit}
                     onSlideChange={handleSlideChange}
                 >
-                    {memories.length === 0 &&
+                    {fetchLoading &&
+                        <SwiperSlide>
+                            <div className="w-full h-full flex justify-center items-center slideDiv">
+                                데이터를 불러오는 중...💻
+                            </div>
+                        </SwiperSlide>
+                    }
+                    {memories.length === 0 && !fetchLoading &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
                                 등록된 추억이 없어요🥲
                             </div>
                         </SwiperSlide>
                     }
-                    {memories.length > 0 &&
+                    {memories.length > 0 && !fetchLoading &&
                         memories.map((i, index) => {
                             return (
-                                <SwiperSlide key={i.alt}>
+                                <SwiperSlide key={i.id}>
                                     <div className="w-full h-full flex justify-center items-center slideDiv">
                                         <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false} onZoomChange={handleZoomed}>
                                             <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />

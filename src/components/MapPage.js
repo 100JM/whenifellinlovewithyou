@@ -34,7 +34,7 @@ const MapPages = ({ handleShowMapPage, memories }) => {
                         
                         return (
                             <MapMarker
-                                key={m.alt}
+                                key={m.id}
                                 position={m.center}
                                 icon={customIcon}
                                 alt={`🗓️${m.date}<br />${m.alt}`}

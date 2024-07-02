@@ -4,6 +4,7 @@ import { addDocumentWithImage } from '../firestore';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
+import loadingBar from '../assets/loading.gif';
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -51,6 +52,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const [showMapConfirm, setShowMapConfirm] = useState(false);
     const [mapKind, setMapKind] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -232,6 +234,8 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             center: selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []
         }
 
+        setIsUploading(true);
+
         try {
             await addDocumentWithImage(data, uploadedFile[0]);
             alert('새로운 추억이 등록되었습니다🤍');
@@ -239,6 +243,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             console.error("Error adding document:", error);
             alert('오류 발생🥲 남자친구에게 문의하세요');
         } finally {
+            setIsUploading(false);
             closeDialog();
         }
     };
@@ -376,7 +381,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
                     </div>
                     <div className="mt-2">
                         <div>
-                            <span>🤫패스워드</span>
+                            <span>🔒패스워드</span>
                         </div>
                     </div>
                     <div className="w-full h-11 flex items-center">

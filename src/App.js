@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
 import MapPages from "./components/MapPage";
@@ -13,6 +13,7 @@ function App() {
   const [showMapPage, setShowMapPage] = useState(false);
   const [memories, setMemories] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -20,7 +21,16 @@ function App() {
         id: doc.id,
         ...doc.data(),
       }));
-      setMemories(docs);
+
+      const sortDocs = docs.sort((a,b) => {
+        const ad = convertDateStringToDate(a.date);
+        const bd = convertDateStringToDate(b.date);
+
+        return bd - ad;
+      })
+      
+      setMemories(sortDocs);
+      setFetchLoading(false);
     });
 
     return () => unsubscribe();
@@ -28,15 +38,21 @@ function App() {
 
   const handleShowMapPage = (isShow) => {
     setShowMapPage(isShow);
-  }
+  };
 
   const handleShowDialog = (isShow) => {
     setShowAdd(isShow)
-  }
+  };
+
+  function convertDateStringToDate(dateString) {
+    const formattedDateString = dateString.replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1-$2-$3');
+
+    return new Date(formattedDateString);
+  };
 
   return (
     <>
-      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog}/>
+      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} />
       <CSSTransition
         in={!showMapPage}
         timeout={300}
@@ -58,7 +74,7 @@ function App() {
             <Dday />
           </div>
           <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-            <Slider handleShowMapPage={handleShowMapPage} memories={memories} handleShowDialog={handleShowDialog}/>
+            <Slider handleShowMapPage={handleShowMapPage} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} />
           </div>
         </div>
       </CSSTransition>
