@@ -4,6 +4,7 @@ import { db } from "./firebase";
 
 import MapPages from "./components/MapPage";
 import AddMemory from "./components/AddMemory";
+import Uploading from "./components/Uploading";
 
 import { CSSTransition } from 'react-transition-group';
 import Dday from "./components/Dday";
@@ -14,6 +15,7 @@ function App() {
   const [memories, setMemories] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -50,9 +52,13 @@ function App() {
     return new Date(formattedDateString);
   };
 
+  const handleUploadingBar = (isShow) => {
+    setIsUploading(isShow);
+  }
+
   return (
     <>
-      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} />
+      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar}/>
       <CSSTransition
         in={!showMapPage}
         timeout={300}
@@ -86,6 +92,7 @@ function App() {
       >
         <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
       </CSSTransition>
+      {isUploading && <Uploading />}
     </>
   );
 }

@@ -37,7 +37,7 @@ const theme = createTheme({
     },
 });
 
-const AddMemory = ({ isOpen, handleShowDialog }) => {
+const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const today = new Date().toISOString();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [showAddrSearchForm, setShowAddrSearchForm] = useState(false);
@@ -51,7 +51,6 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
     const [showMapConfirm, setShowMapConfirm] = useState(false);
     const [mapKind, setMapKind] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -233,7 +232,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             center: selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []
         }
 
-        setIsUploading(true);
+        handleUploadingBar(true);
 
         try {
             await addDocumentWithImage(data, uploadedFile[0]);
@@ -242,7 +241,7 @@ const AddMemory = ({ isOpen, handleShowDialog }) => {
             console.error("Error adding document:", error);
             alert('오류 발생🥲 남자친구에게 문의하세요');
         } finally {
-            setIsUploading(false);
+            handleUploadingBar(false);
             closeDialog();
         }
     };
