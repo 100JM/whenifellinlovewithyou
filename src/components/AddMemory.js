@@ -4,7 +4,6 @@ import { addDocumentWithImage } from '../firestore';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
-import loadingBar from '../assets/loading.gif';
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
