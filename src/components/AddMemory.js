@@ -5,7 +5,7 @@ import { addDocumentWithImage } from '../firestore';
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -36,6 +36,15 @@ const theme = createTheme({
         fontFamily: 'Jua', // 원하는 폰트로 설정
     },
 });
+
+function MapEvents({ onClick }) {
+    useMapEvents({
+        click: (e) => {
+            onClick(e);
+        },
+    });
+    return null;
+};
 
 const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const today = new Date().toISOString();
@@ -102,7 +111,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             return {
                 ...prev,
                 center: [lat, lon],
-                zoom: (mapKind === '해외' ? 18 : 4)
+                zoom: (mapKind === '해외' ? 16 : 4)
             }
         });
     };
@@ -156,6 +165,40 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             kakaoSearch();
         }
     }
+
+    async function getAddressFromCoordinates(lat, lon) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            return data; // 또는 data.address 객체를 사용하여 더 상세한 주소 정보를 얻을 수 있습니다.
+        } catch (error) {
+            console.error("주소 검색 중 오류 발생:", error);
+            return null;
+        }
+    };
+
+    const handleLeafletMapClick = async (e) => {
+        const { lat, lng } = e.latlng;
+        setIsClick();
+        setSearchPosition((prev) => {
+            return {
+                ...prev,
+                center: [lat, lng],
+                zoom: (mapKind === '해외' ? 16 : 4)
+            }
+        });
+
+        const foundAddress = await getAddressFromCoordinates(lat, lng);
+
+        if(foundAddress) {
+            setIsClick(foundAddress.place_id);
+            setSearchAddrList([foundAddress]);
+        }else {
+            alert('위치 정보를 가져오지 못했어요🥲');
+        }
+    };
 
     const nominatimSearch = async () => {
         setIsLoading(true);
@@ -311,7 +354,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                         </button>
                         <button className="h-full px-2 text-slate-500 flex justify-end items-center" style={{ width: "calc(100% - 4rem)" }} onClick={() => { handleMapComfirm(true) }}>
                             <span className="text-ellipsis whitespace-nowrap overflow-hidden">
-                                {(selectedAddr) ? ((selectedAddr.place_name) ? `🚩${selectedAddr.place_name}` : `🚩${selectedAddr.name}`) : '검색🔍'}
+                                {(selectedAddr) ? ((selectedAddr.place_name) ? `🚩${selectedAddr.place_name}` : `🚩${(selectedAddr.name ? selectedAddr.name : selectedAddr.display_name)}`) : '검색🔍'}
                             </span>
                         </button>
                         <Drawer
@@ -329,7 +372,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                 <div className="w-full">
                                     <div style={{ height: '200px', width: '100%', marginTop: "8px" }}>
                                         {mapKind === '해외' &&
-                                            <MapContainer center={searchPosition.center} zoom={searchPosition.zoom} style={{ height: '100%', width: '100%', borderRadius: "4px" }} attributionControl={false}>
+                                            <MapContainer center={searchPosition.center} zoom={searchPosition.zoom} style={{ height: '100%', width: '100%', borderRadius: "4px" }} attributionControl={false} >
                                                 <ChangeView searchPosition={searchPosition} />
                                                 <TileLayer
                                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -337,6 +380,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                                     lang="ko"
                                                 />
                                                 <Marker position={searchPosition.center}></Marker>
+                                                <MapEvents onClick={handleLeafletMapClick} />
                                             </MapContainer>
                                         }
                                         {mapKind === '국내' &&
@@ -358,7 +402,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                                         className={`w-full border-b cursor-pointer hover:bg-gray-100 ${(i.place_id === isClick) ? ' bg-gray-100' : ''}`}
                                                         onClick={() => handleAddrClick(i.place_id, i.lat, i.lon)}
                                                     >
-                                                        <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.name}</div>
+                                                        <div className="w-full overflow-hidden text-ellipsis whitespace-nowrap">{(i.name ? i.name : '-')}</div>
                                                         <div className="text-slate-500 w-full overflow-hidden text-ellipsis whitespace-nowrap">{i.display_name.substring(i.display_name.indexOf(',') + 1).trim()}</div>
                                                     </div>
                                                     :
