@@ -1,6 +1,9 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import axios from 'axios';
 import { addDocumentWithImage } from '../firestore';
+import Cropper from 'react-easy-crop';
+import { getCroppedImg } from '../getCroppedImg';
+import 'react-easy-crop/react-easy-crop.css';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
@@ -60,6 +63,10 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const [showMapConfirm, setShowMapConfirm] = useState(false);
     const [mapKind, setMapKind] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showCrop, setShowCrop] = useState(false);
+    const [imageSrc, setImageSrc] = useState(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -92,11 +99,26 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const handleUploadedFile = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             setUploadedFile(e.target.files);
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                setImageSrc(reader.result);
+                handleCropDialog(true);
+            };
+            reader.readAsDataURL(e.target.files[0]);
         }
     };
 
+    const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
+
     const handleMapComfirm = (isShow) => {
         setShowMapConfirm(isShow);
+    };
+
+    const handleCropDialog = (isShow) => {
+        setShowCrop(isShow);
     };
 
     const handleMapkind = (value) => {
@@ -192,10 +214,10 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
 
         const foundAddress = await getAddressFromCoordinates(lat, lng);
 
-        if(foundAddress) {
+        if (foundAddress) {
             setIsClick(foundAddress.place_id);
             setSearchAddrList([foundAddress]);
-        }else {
+        } else {
             alert('위치 정보를 가져오지 못했어요🥲');
         }
     };
@@ -450,6 +472,26 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                             <button className="w-1/2 h-full" onClick={() => handleMapkind('해외')}>🛫해외</button>
                         </div>
                     </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                open={showCrop}
+                onClose={() => handleCropDialog(false)}
+                maxWidth="xs"
+                fullWidth={true}
+            >
+                <DialogContent style={{ padding: "10px 10px" }}>
+                    {imageSrc && (
+                        <div className="crop-container" style={{width: "400px", height: "400px"}}>
+                            <Cropper
+                                image={imageSrc}
+                                crop={crop}
+                                aspect={9 / 16}
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                            />
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </Dialog>
