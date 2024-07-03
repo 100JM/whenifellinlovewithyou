@@ -2,7 +2,7 @@ import { useRef, useState, useCallback } from 'react';
 import axios from 'axios';
 import { addDocumentWithImage } from '../firestore';
 import Cropper from 'react-easy-crop';
-import { getCroppedImg } from '../getCroppedImg';
+import { getCroppedImg, resizeImage } from '../getCroppedImg';
 import 'react-easy-crop/react-easy-crop.css';
 
 import ChangeView from './ChangeView';
@@ -52,6 +52,7 @@ function MapEvents({ onClick }) {
 const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const today = new Date().toISOString();
     const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploadedFileName, setUploadedFileName] = useState('');
     const [showAddrSearchForm, setShowAddrSearchForm] = useState(false);
     const [searchPosition, setSearchPosition] = useState({
         center: [37.545385, 126.985589],
@@ -66,6 +67,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const [showCrop, setShowCrop] = useState(false);
     const [imageSrc, setImageSrc] = useState(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [cropZoom, setCropZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
     const memoriesRef = useRef({});
@@ -77,6 +79,10 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const closeDialog = () => {
         handleShowDialog(false);
         setUploadedFile(null);
+        setImageSrc(null);
+        
+        setCroppedAreaPixels(null);
+        setUploadedFileName('');
 
         setSearchAddrList([]);
         setIsClick('');
@@ -90,22 +96,27 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             }
         });
     };
-
+    
     const handleFile = () => {
         fileInputRef.current.value = '';
         fileInputRef.current.click();
     };
 
-    const handleUploadedFile = (e) => {
+    const handleUploadedFile = async (e) => {
         if (e.target.files && e.target.files.length > 0) {
-            setUploadedFile(e.target.files);
+            // setUploadedFile(e.target.files);
+            setUploadedFileName(e.target.files[0].name);
+            const resizedImg = await resizeImage(e.target.files[0], 1200, 1200, 0.7);
+            // const reader = new FileReader();
+            // reader.onload = () => {
+            //     setImageSrc(reader.result);
+            //     handleCropDialog(true);
+            // };
+            // reader.readAsDataURL(resizedImg);
+            const imageUrl = URL.createObjectURL(resizedImg);
+            setImageSrc(imageUrl);
+            handleCropDialog(true);
 
-            const reader = new FileReader();
-            reader.onload = () => {
-                setImageSrc(reader.result);
-                handleCropDialog(true);
-            };
-            reader.readAsDataURL(e.target.files[0]);
         }
     };
 
@@ -113,11 +124,27 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
+    const onCompleteCropImg = async () => {
+        const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+        const croppedImageFile = new File([croppedImage], uploadedFileName, {type: croppedImage.type});
+        setUploadedFile(croppedImageFile);
+        setShowCrop(false);
+    };
+
     const handleMapComfirm = (isShow) => {
         setShowMapConfirm(isShow);
     };
 
     const handleCropDialog = (isShow) => {
+        setCrop((prevCrop) => {
+            return {
+                ...prevCrop,
+                x: 0, 
+                y: 0
+            }
+        });
+        setCropZoom(1);
+        
         setShowCrop(isShow);
     };
 
@@ -300,7 +327,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         handleUploadingBar(true);
 
         try {
-            await addDocumentWithImage(data, uploadedFile[0]);
+            await addDocumentWithImage(data, uploadedFile);
             alert('새로운 추억이 등록되었습니다🤍');
         } catch (error) {
             console.error("Error adding document:", error);
@@ -350,13 +377,13 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                             <button className="w-full h-full" onClick={handleFile}>💾</button>
                         </div>
                         <div className="h-full flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1" style={{ width: "calc(100% - 4rem)" }}>
-                            <span>{uploadedFile && uploadedFile.length > 0 ? uploadedFile[0].name : '업로드된 사진이 없습니다.'}</span>
+                            <span>{uploadedFile ? uploadedFile.name : '업로드된 사진이 없습니다.'}</span>
                         </div>
                     </div>
                     {
-                        uploadedFile && uploadedFile.length > 0 &&
+                        uploadedFile &&
                         <div>
-                            <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(uploadedFile[0])} alt="" />
+                            <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(uploadedFile)} alt="" />
                         </div>
                     }
                     <div className="mt-2">
@@ -465,7 +492,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                 maxWidth="xs"
                 fullWidth={true}
             >
-                <DialogContent style={{ padding: "10px 10px" }}>
+                <DialogContent style={{ padding: "10px" }}>
                     <div className="w-full h-full">
                         <div className="w-full h-11 flex justify-around items-center border rounded">
                             <button className="w-1/2 h-full border-r" onClick={() => handleMapkind('국내')}>🚌국내</button>
@@ -476,20 +503,45 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             </Dialog>
             <Dialog
                 open={showCrop}
-                onClose={() => handleCropDialog(false)}
+                // onClose={() => handleCropDialog(false)}
                 maxWidth="xs"
                 fullWidth={true}
             >
-                <DialogContent style={{ padding: "10px 10px" }}>
+                <DialogContent style={{ padding: "10px", height: "auto" }}>
                     {imageSrc && (
-                        <div className="crop-container" style={{width: "400px", height: "400px"}}>
-                            <Cropper
-                                image={imageSrc}
-                                crop={crop}
-                                aspect={9 / 16}
-                                onCropChange={setCrop}
-                                onCropComplete={onCropComplete}
-                            />
+                        <div className="w-full h-full">
+                            <div className="crop-container">
+                                <Cropper
+                                    image={imageSrc}
+                                    crop={crop}
+                                    zoom={cropZoom}
+                                    aspect={9 / 16}
+                                    onCropChange={setCrop}
+                                    onCropComplete={onCropComplete}
+                                    onZoomChange={setCropZoom}
+                                    style={{ height: '100%', width: '100%' }}
+                                    cropShape="rect"
+                                    showGrid={true}
+                                />
+                            </div>
+                            <div className="controls">
+                                <input
+                                    type="range"
+                                    value={cropZoom}
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    aria-labelledby="Zoom"
+                                    onChange={(e) => {
+                                        setCropZoom(e.target.value)
+                                    }}
+                                    className="zoom-range"
+                                />
+                                <div className="w-full h-11 flex justify-end items-center mt-2">
+                                    <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={() => handleCropDialog(false)}>취소</button>
+                                    <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={onCompleteCropImg}>적용</button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </DialogContent>
