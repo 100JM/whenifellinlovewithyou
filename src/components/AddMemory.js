@@ -519,7 +519,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                     <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 1 ? 'bg-gray-100' : ''}`} value={1/1} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>1:1</button>
                                     <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.75 ? 'bg-gray-100' : ''}`} value={3/4} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>3:4</button>
                                     <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 1.3333333333333333 ? 'bg-gray-100' : ''}`} value={4/3} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>4:3</button>
-                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.7024 ? 'bg-gray-100' : ''}`} value={0.7024} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>자동맞춤</button>
+                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.9 ? 'bg-gray-100' : ''}`} value={0.9} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>자동맞춤</button>
                                 </div>
                                 <div className="w-full h-11 flex justify-end items-center mt-2">
                                     <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={() => handleCropDialog(false)}>취소</button>
