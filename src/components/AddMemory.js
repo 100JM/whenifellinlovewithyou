@@ -2,8 +2,6 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import { addDocumentWithImage } from '../firestore';
 import { getCroppedImg, resizeImage } from '../getCroppedImg';
-// import Cropper from 'react-easy-crop';
-// import 'react-easy-crop/react-easy-crop.css';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 
@@ -69,8 +67,6 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const [showCrop, setShowCrop] = useState(false);
     const [imageSrc, setImageSrc] = useState(null);
     const [aspectRatio, setAspectRatio] = useState(null);
-    // const [crop, setCrop] = useState({ x: 0, y: 0 });
-    // const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -83,8 +79,6 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         handleShowDialog(false);
         setUploadedFile(null);
         setImageSrc(null);
-
-        // setCroppedAreaPixels(null);
         setUploadedFileName('');
 
         setSearchAddrList([]);
@@ -107,15 +101,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
 
     const handleUploadedFile = async (e) => {
         if (e.target.files && e.target.files.length > 0) {
-            // setUploadedFile(e.target.files);
             setUploadedFileName(e.target.files[0].name);
             const resizedImg = await resizeImage(e.target.files[0], 1200, 1200, 0.7);
-            // const reader = new FileReader();
-            // reader.onload = () => {
-            //     setImageSrc(reader.result);
-            //     handleCropDialog(true);
-            // };
-            // reader.readAsDataURL(resizedImg);
             const imageUrl = URL.createObjectURL(resizedImg);
             setImageSrc(imageUrl);
             handleCropDialog(true);
@@ -123,15 +110,13 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         }
     };
 
-    // const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    //     setCroppedAreaPixels(croppedAreaPixels);
-    // }, []);
+    const handleAspectRatioChange = (aspect) => {
+        if(cropperRef.current && cropperRef.current.cropper) {
+            cropperRef.current.cropper.setAspectRatio(aspect);
+        }    
+    };
 
     const onCompleteCropImg = async () => {
-        // const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-        // const croppedImageFile = new File([croppedImage], uploadedFileName, { type: croppedImage.type });
-        // setUploadedFile(croppedImageFile);
-
         if (cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.getCroppedCanvas().toBlob(async (blob) => {
                 if (!blob) return;
@@ -149,15 +134,6 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const handleCropDialog = (isShow) => {
-        // setCrop((prevCrop) => {
-        //     return {
-        //         ...prevCrop,
-        //         x: 0,
-        //         y: 0
-        //     }
-        // });
-        // setCropZoom(1);
-
         setShowCrop(isShow);
     };
 
@@ -524,17 +500,6 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     {imageSrc && (
                         <div className="w-full h-full">
                             <div className="crop-container">
-                                {/* <Cropper
-                                    image={imageSrc}
-                                    crop={crop}
-                                    zoom={cropZoom}
-                                    onCropChange={setCrop}
-                                    onCropComplete={onCropComplete}
-                                    onZoomChange={setCropZoom}
-                                    style={{ height: '100%', width: '100%' }}
-                                    cropShape="rect"
-                                    showGrid={true}
-                                /> */}
                                 <Cropper
                                     ref={cropperRef}
                                     src={imageSrc}
@@ -547,13 +512,13 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                 />
                             </div>
                             <div className="controls">
-                                {/* <div className="w-full h-11 flex justify-around items-center mt-2">
-                                    <button className="px-1 w-1/5" value={null} onClick={(e) => setAspectRatio(e.target.value)}>자유롭게</button>
-                                    <button className="px-1 w-1/5" value={1/1} onClick={(e) => setAspectRatio(Number(e.target.value))}>1:1</button>
-                                    <button className="px-1 w-1/5" value={3/4} onClick={(e) => setAspectRatio(Number(e.target.value))}>3:4</button>
-                                    <button className="px-1 w-1/5" value={4/3} onClick={(e) => setAspectRatio(Number(e.target.value))}>4:3</button>
-                                    <button className="px-1 w-1/5" value={0.7024} onClick={(e) => setAspectRatio(Number(e.target.value))}>자동 맞춤</button>
-                                </div> */}
+                                <div className="w-full h-11 flex justify-around items-center mt-2">
+                                    <button className="px-1 w-1/5 text-sm" value={null} onClick={(e) => handleAspectRatioChange(e.target.value)}>자유롭게</button>
+                                    <button className="px-1 w-1/5 text-sm" value={1/1} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>1:1</button>
+                                    <button className="px-1 w-1/5 text-sm" value={3/4} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>3:4</button>
+                                    <button className="px-1 w-1/5 text-sm" value={4/3} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>4:3</button>
+                                    <button className="px-1 w-1/5 text-sm" value={0.7024} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>자동맞춤</button>
+                                </div>
                                 <div className="w-full h-11 flex justify-end items-center mt-2">
                                     <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={() => handleCropDialog(false)}>취소</button>
                                     <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={onCompleteCropImg}>적용</button>
