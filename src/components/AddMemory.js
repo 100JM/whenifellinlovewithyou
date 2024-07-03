@@ -1,9 +1,11 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import { addDocumentWithImage } from '../firestore';
-import Cropper from 'react-easy-crop';
 import { getCroppedImg, resizeImage } from '../getCroppedImg';
-import 'react-easy-crop/react-easy-crop.css';
+// import Cropper from 'react-easy-crop';
+// import 'react-easy-crop/react-easy-crop.css';
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
@@ -66,22 +68,23 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showCrop, setShowCrop] = useState(false);
     const [imageSrc, setImageSrc] = useState(null);
-    const [crop, setCrop] = useState({ x: 0, y: 0 });
-    const [cropZoom, setCropZoom] = useState(1);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [aspectRatio, setAspectRatio] = useState(null);
+    // const [crop, setCrop] = useState({ x: 0, y: 0 });
+    // const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
     const passwordInputRef = useRef();
     const addrSearchBtnRef = useRef();
     const addrSearchInputRef = useRef();
+    const cropperRef = useRef(null);
 
     const closeDialog = () => {
         handleShowDialog(false);
         setUploadedFile(null);
         setImageSrc(null);
-        
-        setCroppedAreaPixels(null);
+
+        // setCroppedAreaPixels(null);
         setUploadedFileName('');
 
         setSearchAddrList([]);
@@ -96,7 +99,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             }
         });
     };
-    
+
     const handleFile = () => {
         fileInputRef.current.value = '';
         fileInputRef.current.click();
@@ -120,14 +123,24 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         }
     };
 
-    const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-        setCroppedAreaPixels(croppedAreaPixels);
-    }, []);
+    // const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    //     setCroppedAreaPixels(croppedAreaPixels);
+    // }, []);
 
     const onCompleteCropImg = async () => {
-        const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
-        const croppedImageFile = new File([croppedImage], uploadedFileName, {type: croppedImage.type});
-        setUploadedFile(croppedImageFile);
+        // const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+        // const croppedImageFile = new File([croppedImage], uploadedFileName, { type: croppedImage.type });
+        // setUploadedFile(croppedImageFile);
+
+        if (cropperRef.current && cropperRef.current.cropper) {
+            cropperRef.current.cropper.getCroppedCanvas().toBlob(async (blob) => {
+                if (!blob) return;
+            
+                const croppedImageFile = new File([blob], uploadedFileName, { type: blob.type });
+                setUploadedFile(croppedImageFile);
+            }, 'image/jpeg');
+        }
+
         setShowCrop(false);
     };
 
@@ -136,15 +149,15 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const handleCropDialog = (isShow) => {
-        setCrop((prevCrop) => {
-            return {
-                ...prevCrop,
-                x: 0, 
-                y: 0
-            }
-        });
-        setCropZoom(1);
-        
+        // setCrop((prevCrop) => {
+        //     return {
+        //         ...prevCrop,
+        //         x: 0,
+        //         y: 0
+        //     }
+        // });
+        // setCropZoom(1);
+
         setShowCrop(isShow);
     };
 
@@ -337,7 +350,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             closeDialog();
         }
     };
-
+    
     return (
         <Dialog
             open={isOpen}
@@ -511,32 +524,36 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     {imageSrc && (
                         <div className="w-full h-full">
                             <div className="crop-container">
-                                <Cropper
+                                {/* <Cropper
                                     image={imageSrc}
                                     crop={crop}
                                     zoom={cropZoom}
-                                    aspect={9 / 16}
                                     onCropChange={setCrop}
                                     onCropComplete={onCropComplete}
                                     onZoomChange={setCropZoom}
                                     style={{ height: '100%', width: '100%' }}
                                     cropShape="rect"
                                     showGrid={true}
+                                /> */}
+                                <Cropper
+                                    ref={cropperRef}
+                                    src={imageSrc}
+                                    aspectRatio={aspectRatio}
+                                    style={{ height: '100%', width: '100%' }}
+                                    guides={false}
+                                    viewMode={1} // 크롭 영역이 이미지를 벗어나지 않게
+                                    background={false}
+                                    data={{ width: '100%' }}
                                 />
                             </div>
                             <div className="controls">
-                                <input
-                                    type="range"
-                                    value={cropZoom}
-                                    min={1}
-                                    max={3}
-                                    step={0.1}
-                                    aria-labelledby="Zoom"
-                                    onChange={(e) => {
-                                        setCropZoom(e.target.value)
-                                    }}
-                                    className="zoom-range"
-                                />
+                                {/* <div className="w-full h-11 flex justify-around items-center mt-2">
+                                    <button className="px-1 w-1/5" value={null} onClick={(e) => setAspectRatio(e.target.value)}>자유롭게</button>
+                                    <button className="px-1 w-1/5" value={1/1} onClick={(e) => setAspectRatio(Number(e.target.value))}>1:1</button>
+                                    <button className="px-1 w-1/5" value={3/4} onClick={(e) => setAspectRatio(Number(e.target.value))}>3:4</button>
+                                    <button className="px-1 w-1/5" value={4/3} onClick={(e) => setAspectRatio(Number(e.target.value))}>4:3</button>
+                                    <button className="px-1 w-1/5" value={0.7024} onClick={(e) => setAspectRatio(Number(e.target.value))}>자동 맞춤</button>
+                                </div> */}
                                 <div className="w-full h-11 flex justify-end items-center mt-2">
                                     <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={() => handleCropDialog(false)}>취소</button>
                                     <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={onCompleteCropImg}>적용</button>
