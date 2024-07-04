@@ -100,7 +100,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const handleUploadedFile = async (e) => {
-        if (e.target.files && e.target.files.length > 0) {
+        if(e.target.files && e.target.files.length > 0) {
             setUploadedFileName(e.target.files[0].name);
             const resizedImg = await resizeImage(e.target.files[0], 1200, 1200, 0.7);
             const imageUrl = URL.createObjectURL(resizedImg);
@@ -114,14 +114,14 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         if(cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.setAspectRatio(aspect);
             setAspectRatio((!aspect ? null : aspect));
-        }    
+        }
     };
-    
+
     const onCompleteCropImg = async () => {
-        if (cropperRef.current && cropperRef.current.cropper) {
+        if(cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.getCroppedCanvas().toBlob(async (blob) => {
                 if (!blob) return;
-            
+
                 const croppedImageFile = new File([blob], uploadedFileName, { type: blob.type });
                 setUploadedFile(croppedImageFile);
             }, 'image/jpeg');
@@ -516,10 +516,10 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                             <div className="controls">
                                 <div className="w-full h-11 flex justify-around items-center mt-2">
                                     <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === null ? 'bg-gray-100' : ''}`} value={null} onClick={(e) => handleAspectRatioChange(e.target.value)}>자유롭게</button>
-                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 1 ? 'bg-gray-100' : ''}`} value={1/1} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>1:1</button>
-                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.75 ? 'bg-gray-100' : ''}`} value={3/4} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>3:4</button>
-                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 1.3333333333333333 ? 'bg-gray-100' : ''}`} value={4/3} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>4:3</button>
-                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.9 ? 'bg-gray-100' : ''}`} value={0.9} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>자동맞춤</button>
+                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 1 ? 'bg-gray-100' : ''}`} value={1 / 1} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>1:1</button>
+                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.75 ? 'bg-gray-100' : ''}`} value={3 / 4} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>3:4</button>
+                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 1.3333333333333333 ? 'bg-gray-100' : ''}`} value={4 / 3} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>4:3</button>
+                                    <button className={`px-1 w-1/5 h-full text-sm ${aspectRatio === 0.65 ? 'bg-gray-100' : ''}`} value={0.65} onClick={(e) => handleAspectRatioChange(Number(e.target.value))}>자동맞춤</button>
                                 </div>
                                 <div className="w-full h-11 flex justify-end items-center mt-2">
                                     <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={() => handleCropDialog(false)}>취소</button>

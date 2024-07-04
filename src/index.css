@@ -70,7 +70,7 @@ body {
 
 .crop-container {
   position: relative;
-  height: 300px; /* 또는 원하는 높이 */
+  height: 100%;
   width: 100%;
   margin-bottom: 20px;
 }
