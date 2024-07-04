@@ -216,7 +216,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         try {
             const response = await fetch(url);
             const data = await response.json();
-            return data; // 또는 data.address 객체를 사용하여 더 상세한 주소 정보를 얻을 수 있습니다.
+            return data;
         } catch (error) {
             console.error("주소 검색 중 오류 발생:", error);
             return null;
