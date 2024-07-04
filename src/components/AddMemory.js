@@ -507,10 +507,12 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                     src={imageSrc}
                                     aspectRatio={aspectRatio}
                                     style={{ height: '100%', width: '100%' }}
-                                    guides={false}
-                                    viewMode={1} // 크롭 영역이 이미지를 벗어나지 않게
+                                    guides={true}
+                                    viewMode={1}
                                     background={false}
                                     data={{ width: '100%' }}
+                                    cropBoxMovable={true}      
+                                    cropBoxResizable={true}
                                 />
                             </div>
                             <div className="controls">
