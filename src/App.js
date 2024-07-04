@@ -29,8 +29,8 @@ function App() {
         const bd = convertDateStringToDate(b.date);
 
         return bd - ad;
-      })
-      
+      });
+
       setMemories(sortDocs);
       setFetchLoading(false);
     });
