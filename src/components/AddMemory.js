@@ -199,12 +199,16 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const handleSearch = () => {
+        if(addrSearchInputRef.current) {
+            addrSearchInputRef.current.blur();
+        }
+
         if (mapKind === '해외') {
             nominatimSearch();
         } else {
             kakaoSearch();
         }
-    }
+    };
 
     async function getAddressFromCoordinates(lat, lon) {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
@@ -332,7 +336,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     return (
         <Dialog
             open={isOpen}
-            onClose={closeDialog}
+            // onClose={closeDialog}
             maxWidth="xs"
             fullWidth={true}
         >
