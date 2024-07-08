@@ -367,7 +367,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                         </div>
                     </div>
                     <div className="w-full h-11 flex border rounded items-center">
-                        <input type="file" className="hidden" accept="image/*" ref={fileInputRef} onChange={(e) => handleUploadedFile(e)} />
+                        <input type="file" className="hidden" accept="image/*,video/*" ref={fileInputRef} onChange={(e) => handleUploadedFile(e)} />
                         <div className="w-16 h-full text-center border-r flex items-center justify-center">
                             <button className="w-full h-full" onClick={handleFile}>💾</button>
                         </div>
@@ -510,7 +510,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                     ref={cropperRef}
                                     src={imageSrc}
                                     aspectRatio={aspectRatio}
-                                    style={{ height: '100%', width: '100%' }}
+                                    style={{ maxHeight: "430px", width: "100%" }}
                                     guides={true}
                                     viewMode={1}
                                     background={false}
