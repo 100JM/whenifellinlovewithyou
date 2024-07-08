@@ -1,14 +1,14 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import axios from 'axios';
-import { addDocumentWithImage } from '../firestore';
-import { getCroppedImg, resizeImage } from '../getCroppedImg';
+import { addDocumentWithImage, addDocumentWithVideo } from '../firestore';
+import { resizeImage } from '../getCroppedImg';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
 
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -100,25 +100,34 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const handleUploadedFile = async (e) => {
-        if(e.target.files && e.target.files.length > 0) {
+        if (e.target.files && e.target.files.length > 0) {
             setUploadedFileName(e.target.files[0].name);
-            const resizedImg = await resizeImage(e.target.files[0], 1200, 1200, 0.7);
-            const imageUrl = URL.createObjectURL(resizedImg);
-            setImageSrc(imageUrl);
-            handleCropDialog(true);
 
+            if ((e.target.files[0].type).indexOf('video') !== 0) {
+                const resizedImg = await resizeImage(e.target.files[0], 1200, 1200, 0.7);
+                const imageUrl = URL.createObjectURL(resizedImg);
+                setImageSrc(imageUrl);
+                handleCropDialog(true);
+            } else {
+                if(e.target.files[0].size > 10000000) {
+                    alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
+                    return;
+                }else {
+                    setUploadedFile(e.target.files[0]);
+                }
+            }
         }
     };
 
     const handleAspectRatioChange = (aspect) => {
-        if(cropperRef.current && cropperRef.current.cropper) {
+        if (cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.setAspectRatio(aspect);
             setAspectRatio((!aspect ? null : aspect));
         }
     };
 
     const onCompleteCropImg = async () => {
-        if(cropperRef.current && cropperRef.current.cropper) {
+        if (cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.getCroppedCanvas().toBlob(async (blob) => {
                 if (!blob) return;
 
@@ -199,7 +208,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const handleSearch = () => {
-        if(addrSearchInputRef.current) {
+        if (addrSearchInputRef.current) {
             addrSearchInputRef.current.blur();
         }
 
@@ -322,7 +331,12 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         handleUploadingBar(true);
 
         try {
-            await addDocumentWithImage(data, uploadedFile);
+            if(uploadedFile.type.indexOf('video') !== 0) {
+                await addDocumentWithImage(data, uploadedFile);
+            }else {
+                await addDocumentWithVideo(data, uploadedFile);
+            }
+
             alert('새로운 추억이 등록되었습니다🤍');
         } catch (error) {
             console.error("Error adding document:", error);
@@ -332,7 +346,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             closeDialog();
         }
     };
-    
+
     return (
         <Dialog
             open={isOpen}
@@ -363,7 +377,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     </ThemeProvider>
                     <div className="mt-2">
                         <div>
-                            <span>📷사진</span>
+                            <span>📷사진/동영상</span>
                         </div>
                     </div>
                     <div className="w-full h-11 flex border rounded items-center">
@@ -371,8 +385,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                         <div className="w-16 h-full text-center border-r flex items-center justify-center">
                             <button className="w-full h-full" onClick={handleFile}>💾</button>
                         </div>
-                        <div className="h-full flex items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-1" style={{ width: "calc(100% - 4rem)" }}>
-                            <span>{uploadedFile ? uploadedFile.name : '업로드된 사진이 없습니다.'}</span>
+                        <div className="h-full flex items-center justify-center px-1" style={{ width: "calc(100% - 4rem)" }}>
+                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{uploadedFile ? uploadedFile.name : '업로드된 파일이 없습니다.'}</span>
                         </div>
                     </div>
                     {
@@ -515,7 +529,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                                     viewMode={1}
                                     background={false}
                                     data={{ width: '100%' }}
-                                    cropBoxMovable={true}      
+                                    cropBoxMovable={true}
                                     cropBoxResizable={true}
                                 />
                             </div>

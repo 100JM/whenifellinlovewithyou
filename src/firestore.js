@@ -1,6 +1,6 @@
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { uploadImage } from "./storage";
+import { uploadImage, uploadVideo } from "./storage";
 
 export const addDocumentWithImage = async (data, imageFile) => {
     try {
@@ -10,6 +10,18 @@ export const addDocumentWithImage = async (data, imageFile) => {
         console.log("Document written with ID: ", docRef.id);
         return docRef.id;
     } catch (error) {
+        console.error("Error adding document: ", error);
+        throw error;
+    }
+};
+
+export const addDocumentWithVideo = async (data, videoFile) => {
+    try {
+        const videoURL = await uploadVideo(videoFile);
+        const docData = { ...data, video: videoURL };
+        const docRef = await addDoc(collection(db, 'Memories'), docData);
+        return docRef.id;
+    }catch(error) {
         console.error("Error adding document: ", error);
         throw error;
     }

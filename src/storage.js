@@ -9,3 +9,12 @@ export const uploadImage = async (file) => {
     const downloadURL = await getDownloadURL(storageRef);
     return downloadURL;
 };
+
+export const uploadVideo = async (file) => {
+    if (!file) return null;
+
+    const storageRefVideo = ref(storage, `videos/${file.name}`);
+    await uploadBytes(storageRefVideo, file);
+    const downloadURL = await getDownloadURL(storageRefVideo);
+    return downloadURL;
+};

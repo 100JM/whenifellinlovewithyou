@@ -24,7 +24,10 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
     const [mapPopup, setMapPopup] = useState('');
     const [isZoomed, setIsZoomed] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [playingIndex, setPlayingIndex] = useState(null);
+
     const swiperRef = useRef(null);
+    const videoRefs = useRef([]);
 
     const handleZoomed = useCallback((zoomed) => {
         setIsZoomed(zoomed);
@@ -42,10 +45,15 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
     const handleSlideChange = (swiper) => {
         setActiveIndex(swiper.realIndex);
         setIsZoomed(false);
+
+        if (playingIndex !== null && videoRefs.current[playingIndex]) {
+            videoRefs.current[playingIndex].pause();
+        }
+        setPlayingIndex(null);
     };
 
     useEffect(() => {
-        if (showMap || isZoomed) {
+        if (showMap || isZoomed || (playingIndex !== null )) {
             if (swiperRef.current && swiperRef.current.autoplay) {
                 swiperRef.current.autoplay.stop();
             }
@@ -54,10 +62,23 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                 swiperRef.current.autoplay.start();
             }
         }
-    }, [showMap, isZoomed]);
+    }, [showMap, isZoomed, playingIndex]);
 
     const handleSwiperInit = (swiper) => {
         swiperRef.current = swiper;
+    };
+
+    const handlePlay = (index) => {
+        setPlayingIndex(index);
+        videoRefs.current.forEach((video, i) => {
+            if (i !== index && video) {
+                video.pause();
+            }
+        });
+    };
+
+    const handlePause = () => {
+        setPlayingIndex(null);
     };
 
     return (
@@ -91,20 +112,43 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                     }
                     {memories.length > 0 && !fetchLoading &&
                         memories.map((i, index) => {
-                            return (
-                                <SwiperSlide key={i.id}>
-                                    <div className="w-full h-full flex justify-center items-center slideDiv">
-                                        <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false} onZoomChange={handleZoomed}>
-                                            <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
-                                        </ControlledZoom>
-                                        <div className="absolute left-2 bottom-0 locationBtn">
-                                            <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt, i.date); }}>
-                                                <img src={mapIcon} alt='위치' />
-                                            </button>
+                            if (i.image) {
+                                return (
+                                    <SwiperSlide key={i.id}>
+                                        <div className="w-full h-full flex justify-center items-center slideDiv">
+                                            <ControlledZoom isZoomed={activeIndex === index ? isZoomed : false} onZoomChange={handleZoomed}>
+                                                <img src={i.image} alt={i.alt} className="w-full h-full rounded-xl" />
+                                            </ControlledZoom>
+                                            <div className="absolute left-2 bottom-0 locationBtn">
+                                                <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt, i.date); }}>
+                                                    <img src={mapIcon} alt='위치' />
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </SwiperSlide>
-                            )
+                                    </SwiperSlide>
+                                )
+                            } else {
+                                return (
+                                    <SwiperSlide key={i.id}>
+                                        <div className="w-full h-full flex justify-center items-center slideDiv">
+                                            <video
+                                                ref={(el) => (videoRefs.current[index] = el)} 
+                                                src={i.video} 
+                                                type="video/mp4" 
+                                                className="w-full h-full object-cover"
+                                                controls
+                                                onPlay={() => handlePlay(index)}
+                                                onPause={handlePause}
+                                            ></video>
+                                            <div className="absolute left-2 top-0 locationBtn">
+                                                <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt, i.date); }}>
+                                                    <img src={mapIcon} alt='위치' />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </SwiperSlide>
+                                )
+                            }
                         })
                     }
                     <SpeedDial
