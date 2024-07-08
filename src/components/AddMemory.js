@@ -115,7 +115,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
-                    await createThumbnail(e.target.files[0]);
+                    const createdThumbnail = await createThumbnail(e.target.files[0]);
+                    setThumbnail(createdThumbnail);
                     setUploadedFile(e.target.files[0]);
                 }
             }
@@ -143,25 +144,32 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     };
 
     const createThumbnail = async (file) => {
-        const video = document.createElement('video');
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        video.addEventListener('loadeddata', () => {
-            video.currentTime = 1;  // 캡처할 프레임의 시간(1초)
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+    
+            video.addEventListener('loadeddata', () => {
+                video.currentTime = 1;  // 캡처할 프레임의 시간(1초)
+            });
+    
+            video.addEventListener('seeked', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob((blob) => {
+                    const thumbnailFile = new File([blob], file.name, { type: 'image/jpeg' });
+                    resolve(thumbnailFile);  // 썸네일 파일 반환
+                }, 'image/jpeg');
+            });
+    
+            video.addEventListener('error', (e) => {
+                reject(e);  // 오류 발생 시 reject 호출
+            });
+    
+            video.src = URL.createObjectURL(file);
+            video.load();  // 비디오 로드 시작
         });
-
-        video.addEventListener('seeked', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            canvas.toBlob((blob) => {
-                const thumbnailFile = new File([blob], uploadedFileName, { type: 'image/jpeg' });
-                setThumbnail(thumbnailFile);
-            }, 'image/jpeg');
-        });
-
-        video.src = URL.createObjectURL(file);
     };
 
     const handleMapComfirm = (isShow) => {
