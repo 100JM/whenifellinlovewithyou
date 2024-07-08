@@ -67,6 +67,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const [showCrop, setShowCrop] = useState(false);
     const [imageSrc, setImageSrc] = useState(null);
     const [aspectRatio, setAspectRatio] = useState(null);
+    const [thumbnail, setThumbnail] = useState(null);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -74,11 +75,12 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const addrSearchBtnRef = useRef();
     const addrSearchInputRef = useRef();
     const cropperRef = useRef(null);
-
+    console.log(thumbnail);
     const closeDialog = () => {
         handleShowDialog(false);
         setUploadedFile(null);
         setImageSrc(null);
+        setThumbnail(null);
         setUploadedFileName('');
 
         setSearchAddrList([]);
@@ -114,11 +116,12 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     return;
                 }else {
                     setUploadedFile(e.target.files[0]);
+                    createThumbnail(e.target.files[0]);
                 }
             }
         }
     };
-
+    
     const handleAspectRatioChange = (aspect) => {
         if (cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.setAspectRatio(aspect);
@@ -137,6 +140,28 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         }
 
         setShowCrop(false);
+    };
+
+    const createThumbnail = (file) => {
+        const video = document.createElement('video');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        video.addEventListener('loadeddata', () => {
+            video.currentTime = 1;  // 캡처할 프레임의 시간(1초)
+        });
+
+        video.addEventListener('seeked', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+                const thumbnailFile = new File([blob], uploadedFileName, { type: 'image/jpeg' });
+                setThumbnail(thumbnailFile);
+            }, 'image/jpeg');
+        });
+
+        video.src = URL.createObjectURL(file);
     };
 
     const handleMapComfirm = (isShow) => {
@@ -334,7 +359,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             if(uploadedFile.type.indexOf('video') !== 0) {
                 await addDocumentWithImage(data, uploadedFile);
             }else {
-                await addDocumentWithVideo(data, uploadedFile);
+                await addDocumentWithVideo(data, uploadedFile, thumbnail);
             }
 
             alert('새로운 추억이 등록되었습니다🤍');

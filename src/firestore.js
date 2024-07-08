@@ -15,10 +15,11 @@ export const addDocumentWithImage = async (data, imageFile) => {
     }
 };
 
-export const addDocumentWithVideo = async (data, videoFile) => {
+export const addDocumentWithVideo = async (data, videoFile, thumbnail) => {
     try {
         const videoURL = await uploadVideo(videoFile);
-        const docData = { ...data, video: videoURL };
+        const thumbnailURL = await uploadImage(thumbnail);
+        const docData = { ...data, video: videoURL, image: thumbnailURL };
         const docRef = await addDoc(collection(db, 'Memories'), docData);
         return docRef.id;
     }catch(error) {

@@ -112,7 +112,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                     }
                     {memories.length > 0 && !fetchLoading &&
                         memories.map((i, index) => {
-                            if (i.image) {
+                            if (!i.video) {
                                 return (
                                     <SwiperSlide key={i.id}>
                                         <div className="w-full h-full flex justify-center items-center slideDiv">
