@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/whenifellinlovewithyou/static/css/main.3aa99015.css",
-    "main.js": "/whenifellinlovewithyou/static/js/main.f390fedf.js",
+    "main.js": "/whenifellinlovewithyou/static/js/main.bfdcf4fd.js",
     "static/js/453.3154d1a9.chunk.js": "/whenifellinlovewithyou/static/js/453.3154d1a9.chunk.js",
     "index.html": "/whenifellinlovewithyou/index.html",
     "main.3aa99015.css.map": "/whenifellinlovewithyou/static/css/main.3aa99015.css.map",
-    "main.f390fedf.js.map": "/whenifellinlovewithyou/static/js/main.f390fedf.js.map",
+    "main.bfdcf4fd.js.map": "/whenifellinlovewithyou/static/js/main.bfdcf4fd.js.map",
     "453.3154d1a9.chunk.js.map": "/whenifellinlovewithyou/static/js/453.3154d1a9.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.3aa99015.css",
-    "static/js/main.f390fedf.js"
+    "static/js/main.bfdcf4fd.js"
   ]
 }
