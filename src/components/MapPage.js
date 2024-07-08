@@ -25,12 +25,15 @@ const MapPages = ({ handleShowMapPage, memories }) => {
                     memories.filter((i) => {
                         return i.center.length > 0;
                     }).map((m) => {
-                        const customIcon = new L.Icon({
-                            iconUrl: m.image,
-                            iconSize: [50, 82],
-                            iconAnchor: [24, 82],
-                            popupAnchor: [2, -68],
-                        });
+                        let customIcon;
+                        if(m.image) {
+                            customIcon = new L.Icon({
+                                iconUrl: m.image,
+                                iconSize: [50, 82],
+                                iconAnchor: [24, 82],
+                                popupAnchor: [2, -68],
+                            });
+                        }
                         
                         return (
                             <MapMarker

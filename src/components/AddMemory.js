@@ -75,7 +75,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     const addrSearchBtnRef = useRef();
     const addrSearchInputRef = useRef();
     const cropperRef = useRef(null);
-    console.log(thumbnail);
+
     const closeDialog = () => {
         handleShowDialog(false);
         setUploadedFile(null);
@@ -115,8 +115,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
-                    const createdThumbnail = await createThumbnail(e.target.files[0]);
-                    setThumbnail(createdThumbnail);
+                    // const createdThumbnail = await createThumbnail(e.target.files[0]);
+                    // setThumbnail(createdThumbnail);
                     setUploadedFile(e.target.files[0]);
                 }
             }
