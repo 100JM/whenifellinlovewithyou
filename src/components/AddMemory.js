@@ -115,8 +115,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
+                    await createThumbnail(e.target.files[0]);
                     setUploadedFile(e.target.files[0]);
-                    createThumbnail(e.target.files[0]);
                 }
             }
         }
@@ -142,7 +142,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         setShowCrop(false);
     };
 
-    const createThumbnail = (file) => {
+    const createThumbnail = async (file) => {
         const video = document.createElement('video');
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
