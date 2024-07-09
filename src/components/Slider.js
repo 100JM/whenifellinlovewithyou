@@ -139,6 +139,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                                                 controls
                                                 onPlay={() => handlePlay(index)}
                                                 onPause={handlePause}
+                                                poster={i.image}
                                             ></video>
                                             <div className="absolute left-2 top-0 locationBtn">
                                                 <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt, i.date); }}>
