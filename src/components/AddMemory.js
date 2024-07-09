@@ -117,22 +117,19 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
-                    // try {
-                    //     // showLog('썸네일 생성 시작');
-                    //     const createdThumnail = await createThumbnail(e.target.files[0]);
-                    //     // showLog('썸네일 생성 완료');
-                    //     setThumbnail(createdThumnail);
-                    //     setUploadedFile(e.target.files[0]);
-                    // } catch (error) {
-                    //     // showLog('썸네일 생성 중 오류 발생: ' + error.message);
-                    //     alert('썸네일 생성 중 오류 발생: ', error.message);
-                    // }
-                    setUploadedFile(e.target.files[0]);
+                    try {
+                        const createdThumnail = await createThumbnail(e.target.files[0]);
+                        
+                        setThumbnail(createdThumnail);
+                        setUploadedFile(e.target.files[0]);
+                    } catch (error) {
+                        alert('썸네일 생성 중 오류 발생: ', error.message);
+                    }
                 }
             }
         }
     };
-    
+    console.log(thumbnail);
     const handleAspectRatioChange = (aspect) => {
         if (cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.setAspectRatio(aspect);
@@ -195,11 +192,14 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     
             // 생성된 썸네일 파일 읽기
             console.log('결과 파일 읽기 시작');
-            const data = ffmpeg.readFile('output.jpeg');
+            const data = await ffmpeg.readFile('output.jpeg');
             console.log('결과 파일 읽기 완료');
-    
+            console.log('data: ', data);
+            const uint8Array = new Uint8Array(data);
+            const blob = new Blob([uint8Array], { type: 'image/jpeg' });
+            console.log('blob: ', blob);
             // 썸네일 파일 생성
-            thumbnailFile = new File([data.buffer], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpeg", { type: 'image/jpeg' });
+            thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpeg", { type: 'image/jpeg' });
             console.log('썸네일 파일 생성 완료');
             
             await ffmpeg.deleteFile('input.mp4'); // 입력 파일 제거
@@ -474,6 +474,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                         uploadedFile &&
                         <div>
                             <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(uploadedFile)} alt="" />
+                            <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(thumbnail)} alt="" />
                         </div>
                     }
                     <div className="mt-2">
