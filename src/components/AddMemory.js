@@ -115,14 +115,14 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
-                    // try {
-                    //     const createdThumbnail = await createThumbnail(e.target.files[0]);
-                    //     setThumbnail(createdThumbnail);
-                    //     setUploadedFile(e.target.files[0]);
-                    // } catch (error) {
-                    //     alert('썸네일 생성 중 오류 발생: ', error);
-                    // }
-                    setUploadedFile(e.target.files[0]);
+                    try {
+                        const createdThumbnail = await createThumbnail(e.target.files[0]);
+                        setThumbnail(createdThumbnail);
+                        setUploadedFile(e.target.files[0]);
+                    } catch (error) {
+                        alert('썸네일 생성 중 오류 발생: ', error.message);
+                    }
+                    // setUploadedFile(e.target.files[0]);
                 }
             }
         }
@@ -148,8 +148,30 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         setShowCrop(false);
     };
 
+    function showLog(message) {
+        const logDiv = document.getElementById('logDiv') || document.createElement('div');
+        logDiv.id = 'logDiv';
+        logDiv.style.position = 'fixed';
+        logDiv.style.bottom = '10px';
+        logDiv.style.left = '10px';
+        logDiv.style.right = '10px';
+        logDiv.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        logDiv.style.color = 'white';
+        logDiv.style.padding = '10px';
+        logDiv.style.maxHeight = '200px';
+        logDiv.style.overflowY = 'auto';
+        logDiv.style.zIndex = '99999';
+        document.body.appendChild(logDiv);
+    
+        const logMessage = document.createElement('p');
+        logMessage.textContent = message;
+        logDiv.appendChild(logMessage);
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
     const createThumbnail = (file) => {
         return new Promise((resolve, reject) => {
+            showLog('썸네일 생성 시작');
             const video = document.createElement('video');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -158,17 +180,35 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             const MAX_WIDTH = 640;
             const MAX_HEIGHT = 480;
     
+            let checkReadyInterval;
+            let timeoutId;
+    
+            const cleanup = () => {
+                showLog('리소스 정리 중');
+                video.removeAttribute('src');
+                video.load();
+                clearInterval(checkReadyInterval);
+                clearTimeout(timeoutId);
+                URL.revokeObjectURL(video.src);
+            };
+    
             reader.onload = (e) => {
+                showLog('파일 읽기 완료');
                 video.src = e.target.result;
             };
     
             reader.onerror = (e) => {
+                showLog('FileReader 오류: ' + e.target.error);
+                cleanup();
                 reject(new Error('FileReader error: ' + e.target.error));
             };
     
             video.addEventListener('canplay', () => {
+                showLog('비디오 canplay 이벤트 발생');
                 let width = video.videoWidth;
                 let height = video.videoHeight;
+    
+                showLog(`원본 비디오 크기: ${width}x${height}`);
     
                 if (width > height) {
                     if (width > MAX_WIDTH) {
@@ -182,31 +222,48 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     }
                 }
     
+                showLog(`조정된 캔버스 크기: ${width}x${height}`);
+    
                 canvas.width = width;
                 canvas.height = height;
     
                 video.currentTime = 1;
     
-                const checkReady = setInterval(() => {
-                    if (video.readyState >= 2) {  
-                        clearInterval(checkReady);
+                checkReadyInterval = setInterval(() => {
+                    if (video.readyState >= 2) {  // HAVE_CURRENT_DATA 이상
+                        clearInterval(checkReadyInterval);
+                        showLog('비디오 준비 완료, 캔버스에 그리기 시작');
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob((blob) => {
-                            const thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpg", { type: 'image/jpeg' });
-                            resolve(thumbnailFile);
+                            if (blob) {
+                                showLog(`Blob 생성 완료, 크기: ${blob.size} bytes`);
+                                const thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpg", { type: 'image/jpeg' });
+                                cleanup();
+                                resolve(thumbnailFile);
+                            } else {
+                                showLog('Blob 생성 실패');
+                                cleanup();
+                                reject(new Error('Blob creation failed'));
+                            }
                         }, 'image/jpeg', 0.7);
                     }
-                }, 20); 
+                }, 20);
             });
-
+    
             video.addEventListener('error', (e) => {
+                showLog('비디오 오류: ' + (video.error ? video.error.message : '알 수 없는 오류'));
+                cleanup();
                 reject(new Error('Video error: ' + (video.error ? video.error.message : 'Unknown error')));
             });
-
-            const timeout = setTimeout(() => {
+    
+            // 전체 작업에 대한 타임아웃 설정
+            timeoutId = setTimeout(() => {
+                showLog('썸네일 생성 시간 초과');
+                cleanup();
                 reject(new Error('Thumbnail creation timed out'));
             }, 30000);
-
+    
+            showLog('파일 읽기 시작');
             reader.readAsDataURL(file);
         });
     };
