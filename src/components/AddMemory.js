@@ -187,7 +187,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
     
             // 비디오 파일에서 5초 지점의 프레임을 추출하여 썸네일 생성
             console.log('썸네일 생성 시작');
-            await ffmpeg.exec(['-i', 'input.mp4', '-ss', '00:00:05', '-frames:v', '1', 'output.jpeg']);
+            await ffmpeg.exec(['-i', 'input.mp4', '-ss', '00:00:03', '-frames:v', '1', 'output.jpeg']);
             console.log('썸네일 생성 완료');
     
             // 생성된 썸네일 파일 읽기
@@ -474,7 +474,6 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                         uploadedFile &&
                         <div>
                             <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(uploadedFile)} alt="" />
-                            <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(thumbnail)} alt="" />
                         </div>
                     }
                     <div className="mt-2">
