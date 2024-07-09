@@ -116,10 +116,13 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     return;
                 }else {
                     try {
+                        showLog('썸네일 생성 시작');
                         const createdThumbnail = await createThumbnail(e.target.files[0]);
+                        showLog('썸네일 생성 완료');
                         setThumbnail(createdThumbnail);
                         setUploadedFile(e.target.files[0]);
                     } catch (error) {
+                        showLog('썸네일 생성 중 오류 발생: ' + error.message);
                         alert('썸네일 생성 중 오류 발생: ', error.message);
                     }
                     // setUploadedFile(e.target.files[0]);
@@ -203,8 +206,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                 reject(new Error('FileReader error: ' + e.target.error));
             };
     
-            video.addEventListener('canplay', () => {
-                showLog('비디오 canplay 이벤트 발생');
+            video.addEventListener('loadedmetadata', () => {
+                showLog('비디오 메타데이터 로드됨');
                 let width = video.videoWidth;
                 let height = video.videoHeight;
     
@@ -228,26 +231,23 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                 canvas.height = height;
     
                 video.currentTime = 1;
+            });
     
-                checkReadyInterval = setInterval(() => {
-                    if (video.readyState >= 2) {  // HAVE_CURRENT_DATA 이상
-                        clearInterval(checkReadyInterval);
-                        showLog('비디오 준비 완료, 캔버스에 그리기 시작');
-                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        canvas.toBlob((blob) => {
-                            if (blob) {
-                                showLog(`Blob 생성 완료, 크기: ${blob.size} bytes`);
-                                const thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpg", { type: 'image/jpeg' });
-                                cleanup();
-                                resolve(thumbnailFile);
-                            } else {
-                                showLog('Blob 생성 실패');
-                                cleanup();
-                                reject(new Error('Blob creation failed'));
-                            }
-                        }, 'image/jpeg', 0.7);
+            video.addEventListener('seeked', () => {
+                showLog('비디오 seek 완료, 캔버스에 그리기 시작');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        showLog(`Blob 생성 완료, 크기: ${blob.size} bytes`);
+                        const thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpg", { type: 'image/jpeg' });
+                        cleanup();
+                        resolve(thumbnailFile);
+                    } else {
+                        showLog('Blob 생성 실패');
+                        cleanup();
+                        reject(new Error('Blob creation failed'));
                     }
-                }, 20);
+                }, 'image/jpeg', 0.7);
             });
     
             video.addEventListener('error', (e) => {
