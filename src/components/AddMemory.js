@@ -115,8 +115,13 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
-                    // const createdThumbnail = await createThumbnail(e.target.files[0]);
-                    // setThumbnail(createdThumbnail);
+                    // try {
+                    //     const createdThumbnail = await createThumbnail(e.target.files[0]);
+                    //     setThumbnail(createdThumbnail);
+                    //     setUploadedFile(e.target.files[0]);
+                    // } catch (error) {
+                    //     alert('썸네일 생성 중 오류 발생: ', error);
+                    // }
                     setUploadedFile(e.target.files[0]);
                 }
             }
@@ -143,32 +148,66 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         setShowCrop(false);
     };
 
-    const createThumbnail = async (file) => {
+    const createThumbnail = (file) => {
         return new Promise((resolve, reject) => {
             const video = document.createElement('video');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
+            const reader = new FileReader();
     
-            video.addEventListener('loadeddata', () => {
-                video.currentTime = 1;  // 캡처할 프레임의 시간(1초)
+            const MAX_WIDTH = 640;
+            const MAX_HEIGHT = 480;
+    
+            reader.onload = (e) => {
+                video.src = e.target.result;
+            };
+    
+            reader.onerror = (e) => {
+                reject(new Error('FileReader error: ' + e.target.error));
+            };
+    
+            video.addEventListener('canplay', () => {
+                let width = video.videoWidth;
+                let height = video.videoHeight;
+    
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+    
+                canvas.width = width;
+                canvas.height = height;
+    
+                video.currentTime = 1;
+    
+                const checkReady = setInterval(() => {
+                    if (video.readyState >= 2) {  
+                        clearInterval(checkReady);
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob((blob) => {
+                            const thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpg", { type: 'image/jpeg' });
+                            resolve(thumbnailFile);
+                        }, 'image/jpeg', 0.7);
+                    }
+                }, 20); 
             });
-    
-            video.addEventListener('seeked', () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob((blob) => {
-                    const thumbnailFile = new File([blob], file.name, { type: 'image/jpeg' });
-                    resolve(thumbnailFile);  // 썸네일 파일 반환
-                }, 'image/jpeg');
-            });
-    
+
             video.addEventListener('error', (e) => {
-                reject(e);  // 오류 발생 시 reject 호출
+                reject(new Error('Video error: ' + (video.error ? video.error.message : 'Unknown error')));
             });
-    
-            video.src = URL.createObjectURL(file);
-            video.load();  // 비디오 로드 시작
+
+            const timeout = setTimeout(() => {
+                reject(new Error('Thumbnail creation timed out'));
+            }, 30000);
+
+            reader.readAsDataURL(file);
         });
     };
 
