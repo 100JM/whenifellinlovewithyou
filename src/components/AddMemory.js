@@ -51,7 +51,7 @@ function MapEvents({ onClick }) {
     return null;
 };
 
-const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
+const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadingText }) => {
     const today = new Date().toISOString();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
@@ -129,7 +129,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             }
         }
     };
-    console.log(thumbnail);
+    
     const handleAspectRatioChange = (aspect) => {
         if (cropperRef.current && cropperRef.current.cropper) {
             cropperRef.current.cropper.setAspectRatio(aspect);
@@ -171,25 +171,54 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         logDiv.scrollTop = logDiv.scrollHeight;
     }
 
+    const getVideoDuration = (file) => {
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+    
+            video.onloadedmetadata = function() {
+                window.URL.revokeObjectURL(video.src);
+                resolve(video.duration);
+            }
+    
+            video.onerror = function() {
+                reject("비디오 메타데이터를 불러오는 데 실패했습니다.");
+            }
+    
+            video.src = URL.createObjectURL(file);
+        });
+    }
+
     const createThumbnail = async (file) => {
         const ffmpeg = new FFmpeg({ log: true });
         let thumbnailFile;
         try {
+            handleUploadingBar(true);
+            
+            const duration = await getVideoDuration(file);
+            const thumbnailTime = Math.floor(duration / 2);
+
+            handleUploadingText('동영상 읽는 중...');
+
             // FFmpeg 로드
             console.log('FFmpeg 로드 시작');
             await ffmpeg.load();
             console.log('FFmpeg 로드 완료');
-    
+            
             // 입력 파일을 메모리에 쓰기
             console.log('파일 쓰기 시작');
             await ffmpeg.writeFile('input.mp4', await fetchFile(file));
             console.log('파일 쓰기 완료');
-    
-            // 비디오 파일에서 5초 지점의 프레임을 추출하여 썸네일 생성
+            
+            handleUploadingText('썸네일 생성 중...');
+
+            // 비디오 파일에서 1초 지점의 프레임을 추출하여 썸네일 생성
             console.log('썸네일 생성 시작');
-            await ffmpeg.exec(['-i', 'input.mp4', '-ss', '00:00:03', '-frames:v', '1', 'output.jpeg']);
+            await ffmpeg.exec(['-i', 'input.mp4', '-ss', `00:00:0${thumbnailTime}`, '-frames:v', '1', 'output.jpeg']);
             console.log('썸네일 생성 완료');
-    
+
+            handleUploadingText('작업 마무리 중...');
+
             // 생성된 썸네일 파일 읽기
             console.log('결과 파일 읽기 시작');
             const data = await ffmpeg.readFile('output.jpeg');
@@ -198,6 +227,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             const uint8Array = new Uint8Array(data);
             const blob = new Blob([uint8Array], { type: 'image/jpeg' });
             console.log('blob: ', blob);
+
             // 썸네일 파일 생성
             thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpeg", { type: 'image/jpeg' });
             console.log('썸네일 파일 생성 완료');
@@ -211,6 +241,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             console.error('FFmpeg 실행 중 오류 발생:', error);
             throw error;
         } finally {
+            handleUploadingText('');
+            handleUploadingBar(false);
             try {
                 ffmpeg.terminate();
                 console.log('종료');
@@ -410,6 +442,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         }
 
         handleUploadingBar(true);
+        handleUploadingText('업로드 중...');
 
         try {
             if(uploadedFile.type.indexOf('video') !== 0) {
@@ -423,6 +456,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
             console.error("Error adding document:", error);
             alert('오류 발생🥲 남자친구에게 문의하세요');
         } finally {
+            handleUploadingText('');
             handleUploadingBar(false);
             closeDialog();
         }

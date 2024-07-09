@@ -16,6 +16,7 @@ function App() {
   const [showAdd, setShowAdd] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadinText, setUploadingText] = useState('');
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -54,11 +55,15 @@ function App() {
 
   const handleUploadingBar = (isShow) => {
     setIsUploading(isShow);
-  }
+  };
+
+  const handleUploadingText = (text) => {
+    setUploadingText(text);
+  };
 
   return (
     <>
-      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar}/>
+      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText}/>
       <CSSTransition
         in={!showMapPage}
         timeout={300}
@@ -92,7 +97,7 @@ function App() {
       >
         <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
       </CSSTransition>
-      {isUploading && <Uploading />}
+      {isUploading && <Uploading uploadinText={uploadinText}/>}
     </>
   );
 }
