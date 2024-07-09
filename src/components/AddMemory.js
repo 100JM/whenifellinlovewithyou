@@ -4,6 +4,8 @@ import { addDocumentWithImage, addDocumentWithVideo } from '../firestore';
 import { resizeImage } from '../getCroppedImg';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
@@ -115,17 +117,17 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
                     alert('동영상 파일의 용량이 10MB 초과입니다.🥲');
                     return;
                 }else {
-                    try {
-                        showLog('썸네일 생성 시작');
-                        const createdThumbnail = await createThumbnail(e.target.files[0]);
-                        showLog('썸네일 생성 완료');
-                        setThumbnail(createdThumbnail);
-                        setUploadedFile(e.target.files[0]);
-                    } catch (error) {
-                        showLog('썸네일 생성 중 오류 발생: ' + error.message);
-                        alert('썸네일 생성 중 오류 발생: ', error.message);
-                    }
-                    // setUploadedFile(e.target.files[0]);
+                    // try {
+                    //     // showLog('썸네일 생성 시작');
+                    //     const createdThumnail = await createThumbnail(e.target.files[0]);
+                    //     // showLog('썸네일 생성 완료');
+                    //     setThumbnail(createdThumnail);
+                    //     setUploadedFile(e.target.files[0]);
+                    // } catch (error) {
+                    //     // showLog('썸네일 생성 중 오류 발생: ' + error.message);
+                    //     alert('썸네일 생성 중 오류 발생: ', error.message);
+                    // }
+                    setUploadedFile(e.target.files[0]);
                 }
             }
         }
@@ -172,100 +174,50 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar }) => {
         logDiv.scrollTop = logDiv.scrollHeight;
     }
 
-    const createThumbnail = (file) => {
-        return new Promise((resolve, reject) => {
-            showLog('썸네일 생성 시작');
-            const video = document.createElement('video');
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const reader = new FileReader();
+    const createThumbnail = async (file) => {
+        const ffmpeg = new FFmpeg({ log: true });
+        let thumbnailFile;
+        try {
+            // FFmpeg 로드
+            console.log('FFmpeg 로드 시작');
+            await ffmpeg.load();
+            console.log('FFmpeg 로드 완료');
     
-            const MAX_WIDTH = 640;
-            const MAX_HEIGHT = 480;
+            // 입력 파일을 메모리에 쓰기
+            console.log('파일 쓰기 시작');
+            await ffmpeg.writeFile('input.mp4', await fetchFile(file));
+            console.log('파일 쓰기 완료');
     
-            let checkReadyInterval;
-            let timeoutId;
+            // 비디오 파일에서 5초 지점의 프레임을 추출하여 썸네일 생성
+            console.log('썸네일 생성 시작');
+            await ffmpeg.exec(['-i', 'input.mp4', '-ss', '00:00:05', '-frames:v', '1', 'output.jpeg']);
+            console.log('썸네일 생성 완료');
     
-            const cleanup = () => {
-                showLog('리소스 정리 중');
-                video.removeAttribute('src');
-                video.load();
-                clearInterval(checkReadyInterval);
-                clearTimeout(timeoutId);
-                URL.revokeObjectURL(video.src);
-            };
+            // 생성된 썸네일 파일 읽기
+            console.log('결과 파일 읽기 시작');
+            const data = ffmpeg.readFile('output.jpeg');
+            console.log('결과 파일 읽기 완료');
     
-            reader.onload = (e) => {
-                showLog('파일 읽기 완료');
-                video.src = e.target.result;
-            };
-    
-            reader.onerror = (e) => {
-                showLog('FileReader 오류: ' + e.target.error);
-                cleanup();
-                reject(new Error('FileReader error: ' + e.target.error));
-            };
-    
-            video.addEventListener('loadedmetadata', () => {
-                showLog('비디오 메타데이터 로드됨');
-                let width = video.videoWidth;
-                let height = video.videoHeight;
-    
-                showLog(`원본 비디오 크기: ${width}x${height}`);
-    
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                    }
-                }
-    
-                showLog(`조정된 캔버스 크기: ${width}x${height}`);
-    
-                canvas.width = width;
-                canvas.height = height;
-    
-                video.currentTime = 1;
-            });
-    
-            video.addEventListener('seeked', () => {
-                showLog('비디오 seek 완료, 캔버스에 그리기 시작');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        showLog(`Blob 생성 완료, 크기: ${blob.size} bytes`);
-                        const thumbnailFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpg", { type: 'image/jpeg' });
-                        cleanup();
-                        resolve(thumbnailFile);
-                    } else {
-                        showLog('Blob 생성 실패');
-                        cleanup();
-                        reject(new Error('Blob creation failed'));
-                    }
-                }, 'image/jpeg', 0.7);
-            });
-    
-            video.addEventListener('error', (e) => {
-                showLog('비디오 오류: ' + (video.error ? video.error.message : '알 수 없는 오류'));
-                cleanup();
-                reject(new Error('Video error: ' + (video.error ? video.error.message : 'Unknown error')));
-            });
-    
-            // 전체 작업에 대한 타임아웃 설정
-            timeoutId = setTimeout(() => {
-                showLog('썸네일 생성 시간 초과');
-                cleanup();
-                reject(new Error('Thumbnail creation timed out'));
-            }, 30000);
-    
-            showLog('파일 읽기 시작');
-            reader.readAsDataURL(file);
-        });
+            // 썸네일 파일 생성
+            thumbnailFile = new File([data.buffer], file.name.replace(/\.[^/.]+$/, "") + "_thumbnail.jpeg", { type: 'image/jpeg' });
+            console.log('썸네일 파일 생성 완료');
+            
+            await ffmpeg.deleteFile('input.mp4'); // 입력 파일 제거
+            await ffmpeg.deleteFile('output.jpeg'); // 썸네일 파일 제거
+            console.log('파일 제거 완료');
+
+            return thumbnailFile;
+        } catch (error) {
+            console.error('FFmpeg 실행 중 오류 발생:', error);
+            throw error;
+        } finally {
+            try {
+                ffmpeg.terminate();
+                console.log('종료');
+            } catch (error) {
+                console.error('종료 중 오류 발생:', error);
+            }
+        }
     };
 
     const handleMapComfirm = (isShow) => {
