@@ -53,7 +53,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
     };
 
     useEffect(() => {
-        if (showMap || isZoomed || (playingIndex !== null )) {
+        if (showMap || isZoomed || (playingIndex !== null)) {
             if (swiperRef.current && swiperRef.current.autoplay) {
                 swiperRef.current.autoplay.stop();
             }
@@ -132,9 +132,9 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                                     <SwiperSlide key={i.id}>
                                         <div className="w-full h-full flex justify-center items-center slideDiv">
                                             <video
-                                                ref={(el) => (videoRefs.current[index] = el)} 
-                                                src={i.video} 
-                                                type="video/mp4" 
+                                                ref={(el) => (videoRefs.current[index] = el)}
+                                                src={i.video}
+                                                type="video/mp4"
                                                 className="w-full h-full object-cover"
                                                 controls
                                                 onPlay={() => handlePlay(index)}
@@ -177,7 +177,15 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                 {mapCenter && mapCenter.length > 0 ?
                     <LeafletMaps mapCenter={mapCenter} mapPopup={mapPopup} />
                     :
-                    <div className="p-3 rounded flex justify-center items-center" style={{ height: '300px', width: '100%' }}>
+                    <div className="p-3 rounded flex justify-center items-center text-center" style={{ height: '300px', width: '100%' }}>
+                        {mapPopup && mapPopup.split('<br />').map((line, index) => {
+                            return (
+                                <>
+                                    {line}
+                                    <br />
+                                </>
+                            );
+                        })}
                         위치 정보가 없습니다🥲
                     </div>
                 }
