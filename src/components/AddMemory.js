@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
-import { addDocumentWithImage, addDocumentWithVideo } from '../firestore';
+import { addDocumentWithImage, addDocumentWithVideo, updateDocument } from '../firestore';
 import { resizeImage } from '../getCroppedImg';
 import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
@@ -18,6 +18,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRotateLeft } from '@fortawesome/free-solid-svg-icons';
 
 import dayjs, { Dayjs } from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Drawer from '@mui/material/Drawer';
@@ -51,7 +52,7 @@ function MapEvents({ onClick }) {
     return null;
 };
 
-const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadingText }) => {
+const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadingText, selectedMemory }) => {
     const today = new Date().toISOString();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
@@ -70,6 +71,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
     const [imageSrc, setImageSrc] = useState(null);
     const [aspectRatio, setAspectRatio] = useState(null);
     const [thumbnail, setThumbnail] = useState(null);
+    const [replacedAlt, setReplacedAlt] = useState('');
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -78,12 +80,21 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
     const addrSearchInputRef = useRef();
     const cropperRef = useRef(null);
 
+    dayjs.extend(customParseFormat);
+
+    useEffect(() => {
+        if(selectedMemory.id) {
+            setReplacedAlt(selectedMemory.alt.replace(/<br \/>/g, '\n'));
+        }
+    }, [selectedMemory.id]);
+
     const closeDialog = () => {
         handleShowDialog(false);
         setUploadedFile(null);
         setImageSrc(null);
         setThumbnail(null);
         setUploadedFileName('');
+        setReplacedAlt('');
 
         setSearchAddrList([]);
         setIsClick('');
@@ -462,6 +473,45 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         }
     };
 
+    const handleUpdateMemory = async () => {
+        const uploadPassword = process.env.REACT_APP_PASSWORD;
+
+        if (!passwordInputRef || passwordInputRef.current.value !== uploadPassword) {
+            alert('패스워드를 확인해주세요.');
+            return;
+        }
+
+        const data = {
+            date: memoriesRef.current.date.value,
+            alt: memoriesRef.current.alt.value.replace(/\n/g, '<br />'),
+            center: selectedMemory.id && !selectedAddr ? selectedMemory.center : (selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : [])
+        };
+
+        handleUploadingBar(true);
+        handleUploadingText('업데이트 중...');
+
+        try {
+            if(uploadedFile) {
+                if(uploadedFile.type.indexOf('video') !== 0) {
+                    await updateDocument(selectedMemory.id, data, uploadedFile);
+                }else {
+                    await updateDocument(selectedMemory.id, data, thumbnail, uploadedFile);
+                }
+            }else {
+                await updateDocument(selectedMemory.id, data);
+            }
+
+            alert('추억이 수정되었습니다🤍');
+        } catch (error) {
+            console.error("Error adding document:", error);
+            alert('오류 발생🥲 남자친구에게 문의하세요');
+        } finally {
+            handleUploadingText('');
+            handleUploadingBar(false);
+            closeDialog();
+        }
+    };
+
     return (
         <Dialog
             open={isOpen}
@@ -479,7 +529,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
                             <MobileDatePicker
                                 format="YYYY년 MM월 DD일"
                                 dayOfWeekFormatter={(day) => ['일', '월', '화', '수', '목', '금', '토'][day]}
-                                defaultValue={dayjs(today)}
+                                defaultValue={selectedMemory.id ? dayjs(selectedMemory.date, 'YYYY년 MM월 DD일') : dayjs(today)}
                                 inputRef={(el) => { memoriesRef.current['date'] = el }}
                                 // onChange={(newValue) => setMemoriesValue('date', dayjs(newValue).format('YYYY-MM-DD'))}
                                 className="w-full"
@@ -501,7 +551,9 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
                             <button className="w-full h-full" onClick={handleFile}>💾</button>
                         </div>
                         <div className="h-full flex items-center justify-center px-1" style={{ width: "calc(100% - 4rem)" }}>
-                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{uploadedFile ? uploadedFile.name : '업로드된 파일이 없습니다.'}</span>
+                            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                                {uploadedFile ? uploadedFile.name : (selectedMemory.id ? <button className="text-blue-400">등록된 사진/동영상</button> : '업로드된 파일이 없습니다.')}
+                            </span>
                         </div>
                     </div>
                     {
@@ -510,13 +562,19 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
                             <img className="mt-2 max-w-full h-auto" src={URL.createObjectURL(uploadedFile)} alt="" />
                         </div>
                     }
+                    {
+                        !uploadedFile && selectedMemory.id &&
+                        <div>
+                            <img className="mt-2 max-w-full h-auto" src={(selectedMemory.video ? selectedMemory.video : selectedMemory.image)} alt="" />
+                        </div>
+                    }
                     <div className="mt-2">
                         <div>
                             <span>📝코멘트</span>
                         </div>
                     </div>
                     <div className="w-full h-16">
-                        <textarea className="w-full h-full px-1 comment" ref={(el) => { memoriesRef.current['alt'] = el }} />
+                        <textarea className="w-full h-full px-1 comment" ref={(el) => { memoriesRef.current['alt'] = el }} defaultValue={selectedMemory.id ? replacedAlt : ''}/>
                     </div>
                     <div className="mt-2">
                         <span>🗺️위치</span>
@@ -605,7 +663,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
                     <div className="mt-2">
                         <div className="w-full h-11 flex justify-end items-center">
                             <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={closeDialog}>취소</button>
-                            <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleSubmitMemory}>저장</button>
+                            {!selectedMemory.id && <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleSubmitMemory}>저장</button>}
+                            {selectedMemory.id && <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleUpdateMemory}>수정</button>}
                         </div>
                     </div>
                 </div>

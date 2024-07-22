@@ -14,11 +14,14 @@ import mapIcon from '../assets/favicon-32x32.png'
 import earthIcon from '../assets/earth-32x32.png';
 import plusIcon from '../assets/plus-32x32.png';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
+
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading }) => {
+const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading, getSelectedMemoryInfo, selectedMemory }) => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
@@ -53,7 +56,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
     };
 
     useEffect(() => {
-        if (showMap || isZoomed || (playingIndex !== null)) {
+        if (showMap || isZoomed || (playingIndex !== null) || selectedMemory.id) {
             if (swiperRef.current && swiperRef.current.autoplay) {
                 swiperRef.current.autoplay.stop();
             }
@@ -62,7 +65,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                 swiperRef.current.autoplay.start();
             }
         }
-    }, [showMap, isZoomed, playingIndex]);
+    }, [showMap, isZoomed, playingIndex, selectedMemory.id]);
 
     const handleSwiperInit = (swiper) => {
         swiperRef.current = swiper;
@@ -127,6 +130,11 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                                                     <img src={mapIcon} alt='위치' />
                                                 </button>
                                             </div>
+                                            <div className="absolute right-2 top-1 locationBtn">
+                                                <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
+                                                    <FontAwesomeIcon icon={faEllipsis} className="text-white text-xl"/>
+                                                </button>
+                                            </div>
                                         </div>
                                     </SwiperSlide>
                                 )
@@ -147,6 +155,11 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                                             <div className="absolute left-2 top-0 locationBtn">
                                                 <button title="위치보기" onClick={() => { handleShowMap(true); handleMapCenter(i.center, i.alt, i.date); }}>
                                                     <img src={mapIcon} alt='위치' />
+                                                </button>
+                                            </div>
+                                            <div className="absolute right-2 top-1 locationBtn">
+                                                <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
+                                                    <FontAwesomeIcon icon={faEllipsis} className="text-white text-xl"/>
                                                 </button>
                                             </div>
                                         </div>

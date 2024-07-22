@@ -17,6 +17,7 @@ function App() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadinText, setUploadingText] = useState('');
+  const [selectedMemory, setSelectedMemory] = useState({});
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -25,7 +26,7 @@ function App() {
         ...doc.data(),
       }));
 
-      const sortDocs = docs.sort((a,b) => {
+      const sortDocs = docs.sort((a, b) => {
         const ad = convertDateStringToDate(a.date);
         const bd = convertDateStringToDate(b.date);
 
@@ -45,6 +46,10 @@ function App() {
 
   const handleShowDialog = (isShow) => {
     setShowAdd(isShow)
+
+    if(!isShow) {
+      setSelectedMemory({});
+    }
   };
 
   function convertDateStringToDate(dateString) {
@@ -61,9 +66,19 @@ function App() {
     setUploadingText(text);
   };
 
+  const getSelectedMemoryInfo = (id) => {
+    const memory = memories.find((m) => {
+      return m.id === id;
+    });
+
+    setSelectedMemory(memory);
+
+    setShowAdd(true);
+  }
+
   return (
     <>
-      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText}/>
+      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory}/>
       <CSSTransition
         in={!showMapPage}
         timeout={300}
@@ -85,7 +100,7 @@ function App() {
             <Dday />
           </div>
           <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-            <Slider handleShowMapPage={handleShowMapPage} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} />
+            <Slider handleShowMapPage={handleShowMapPage} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory}/>
           </div>
         </div>
       </CSSTransition>
@@ -97,7 +112,7 @@ function App() {
       >
         <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
       </CSSTransition>
-      {isUploading && <Uploading uploadinText={uploadinText}/>}
+      {isUploading && <Uploading uploadinText={uploadinText} />}
     </>
   );
 }
