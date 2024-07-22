@@ -91,7 +91,11 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                     loop={memories.length > 1}
                     speed={400}
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
-                    navigation={true}
+                    // navigation={true}
+                    pagination={{
+                        dynamicBullets: true,
+                        clickable: true,
+                    }}
                     className='w-full h-full rounded-xl'
                     onInit={handleSwiperInit}
                     onSlideChange={handleSlideChange}
