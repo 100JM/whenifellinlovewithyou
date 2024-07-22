@@ -91,7 +91,6 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading })
                     loop={memories.length > 1}
                     speed={400}
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
-                    // navigation={true}
                     pagination={{
                         dynamicBullets: true,
                         clickable: true,
