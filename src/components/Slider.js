@@ -132,7 +132,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading, g
                                             </div>
                                             <div className="absolute right-2 top-1 locationBtn">
                                                 <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
-                                                    <FontAwesomeIcon icon={faEllipsis} className="text-white text-xl"/>
+                                                    <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{color: "#FFB6C1"}}/>
                                                 </button>
                                             </div>
                                         </div>
@@ -159,7 +159,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading, g
                                             </div>
                                             <div className="absolute right-2 top-1 locationBtn">
                                                 <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
-                                                    <FontAwesomeIcon icon={faEllipsis} className="text-white text-xl"/>
+                                                    <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{color: "#FFB6C1"}}/>
                                                 </button>
                                             </div>
                                         </div>

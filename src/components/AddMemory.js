@@ -72,6 +72,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
     const [aspectRatio, setAspectRatio] = useState(null);
     const [thumbnail, setThumbnail] = useState(null);
     const [replacedAlt, setReplacedAlt] = useState('');
+    const [locationName, setLocationName] = useState('');
+    const [isRemoveLocation, setIsRemoveLocation] = useState(false);
 
     const memoriesRef = useRef({});
     const fileInputRef = useRef();
@@ -85,6 +87,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
     useEffect(() => {
         if(selectedMemory.id) {
             setReplacedAlt(selectedMemory.alt.replace(/<br \/>/g, '\n'));
+            setLocationName(selectedMemory.locationName);
         }
     }, [selectedMemory.id]);
 
@@ -95,6 +98,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         setThumbnail(null);
         setUploadedFileName('');
         setReplacedAlt('');
+        setLocationName('');
+        setIsRemoveLocation(false);
 
         setSearchAddrList([]);
         setIsClick('');
@@ -304,12 +309,26 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         });
 
         setSelectedAddr(selected);
+        setLocationName((selected.place_name) ? selected.place_name : (selected.name ? selected.name : selected.display_name));
         handleAddrSearchForm(false);
+        setIsRemoveLocation(false);
     };
 
     const hadnleResetAddr = () => {
         setSelectedAddr();
-    }
+        setIsRemoveLocation(false);
+        
+        if(selectedMemory.id) {
+            setLocationName(selectedMemory.locationName);
+        }else {
+            setLocationName('');
+        }
+    };
+
+    const handleRemoveLocation = () => {
+        setIsRemoveLocation(true);
+        setLocationName('');
+    };
 
     const handleEnter = (e) => {
         if (e.key === 'Enter' || e.key === 13) {
@@ -449,7 +468,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         const data = {
             date: memoriesRef.current.date.value,
             alt: memoriesRef.current.alt.value.replace(/\n/g, '<br />'),
-            center: selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []
+            center: selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : [],
+            locationName: locationName
         }
 
         handleUploadingBar(true);
@@ -484,7 +504,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         const data = {
             date: memoriesRef.current.date.value,
             alt: memoriesRef.current.alt.value.replace(/\n/g, '<br />'),
-            center: selectedMemory.id && !selectedAddr ? selectedMemory.center : (selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : [])
+            center: isRemoveLocation ? [] : selectedMemory.id && !selectedAddr ? selectedMemory.center : (selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []),
+            locationName: locationName
         };
 
         handleUploadingBar(true);
@@ -578,6 +599,11 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
                     </div>
                     <div className="mt-2">
                         <span>🗺️위치</span>
+                        {selectedMemory.id &&
+                            <button className="h-full float-right border rounded text-sm px-1 text-gray-500 flex justify-center items-center" onClick={handleRemoveLocation}>
+                                <span>위치 삭제🗑️</span>
+                            </button>
+                        }
                     </div>
                     <div className="border rounded w-full h-11 flex items-center">
                         <button className="w-16 h-full flex justify-center items-center border-r" onClick={hadnleResetAddr}>
@@ -585,7 +611,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
                         </button>
                         <button className="h-full px-2 text-slate-500 flex justify-end items-center" style={{ width: "calc(100% - 4rem)" }} onClick={() => { handleMapComfirm(true) }}>
                             <span className="text-ellipsis whitespace-nowrap overflow-hidden">
-                                {(selectedAddr) ? ((selectedAddr.place_name) ? `🚩${selectedAddr.place_name}` : `🚩${(selectedAddr.name ? selectedAddr.name : selectedAddr.display_name)}`) : '검색🔍'}
+                                {(locationName) ? `🚩${locationName}` : '검색🔍'}
                             </span>
                         </button>
                         <Drawer
