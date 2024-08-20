@@ -132,5 +132,5 @@ body {
   margin: 0px 0px 10px 10px;
   position: absolute;
   bottom: 0;
-  left: 0;
+  z-index: 100;
 }

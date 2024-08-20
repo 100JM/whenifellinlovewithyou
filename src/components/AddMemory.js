@@ -166,27 +166,6 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         setShowCrop(false);
     };
 
-    function showLog(message) {
-        const logDiv = document.getElementById('logDiv') || document.createElement('div');
-        logDiv.id = 'logDiv';
-        logDiv.style.position = 'fixed';
-        logDiv.style.bottom = '10px';
-        logDiv.style.left = '10px';
-        logDiv.style.right = '10px';
-        logDiv.style.backgroundColor = 'rgba(0,0,0,0.7)';
-        logDiv.style.color = 'white';
-        logDiv.style.padding = '10px';
-        logDiv.style.maxHeight = '200px';
-        logDiv.style.overflowY = 'auto';
-        logDiv.style.zIndex = '99999';
-        document.body.appendChild(logDiv);
-    
-        const logMessage = document.createElement('p');
-        logMessage.textContent = message;
-        logDiv.appendChild(logMessage);
-        logDiv.scrollTop = logDiv.scrollHeight;
-    }
-
     const getVideoDuration = (file) => {
         return new Promise((resolve, reject) => {
             const video = document.createElement('video');
