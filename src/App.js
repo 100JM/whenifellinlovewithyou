@@ -3,6 +3,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 
 import MapPages from "./components/MapPage";
+import Gallery from "./components/Gallery";
 import AddMemory from "./components/AddMemory";
 import Uploading from "./components/Uploading";
 
@@ -12,6 +13,7 @@ import Slider from './components/Slider';
 
 function App() {
   const [showMapPage, setShowMapPage] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
   const [memories, setMemories] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -42,6 +44,12 @@ function App() {
 
   const handleShowMapPage = (isShow) => {
     setShowMapPage(isShow);
+    setShowGallery(false);
+  };
+  
+  const handleShowGallery = (isShow) => {
+    setShowGallery(isShow);
+    setShowMapPage(false);
   };
 
   const handleShowDialog = (isShow) => {
@@ -80,7 +88,7 @@ function App() {
     <>
       <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory}/>
       <CSSTransition
-        in={!showMapPage}
+        in={!showMapPage && !showGallery}
         timeout={300}
         classNames="slide"
         unmountOnExit
@@ -100,17 +108,25 @@ function App() {
             <Dday />
           </div>
           <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-            <Slider handleShowMapPage={handleShowMapPage} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory}/>
+            <Slider handleShowMapPage={handleShowMapPage} handleShowGallery={handleShowGallery} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory}/>
           </div>
         </div>
       </CSSTransition>
       <CSSTransition
-        in={showMapPage}
+        in={showMapPage && !showGallery}
         timeout={300}
         classNames="slide"
         unmountOnExit
       >
         <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
+      </CSSTransition>
+      <CSSTransition
+        in={showGallery && !showMapPage}
+        timeout={300}
+        classNames="slide"
+        unmountOnExit
+      >
+        <Gallery handleShowGallery={handleShowGallery} memories={memories}/>
       </CSSTransition>
       {isUploading && <Uploading uploadinText={uploadinText} />}
     </>

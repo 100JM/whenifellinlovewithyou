@@ -13,6 +13,7 @@ import 'react-medium-image-zoom/dist/styles.css';
 import mapIcon from '../assets/favicon-32x32.png'
 import earthIcon from '../assets/earth-32x32.png';
 import plusIcon from '../assets/plus-32x32.png';
+import filmIcon from '../assets/film-32x32.png';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
@@ -21,7 +22,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading, getSelectedMemoryInfo, selectedMemory }) => {
+const Slider = ({ handleShowMapPage, handleShowGallery, memories, handleShowDialog, fetchLoading, getSelectedMemoryInfo, selectedMemory }) => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
@@ -179,6 +180,7 @@ const Slider = ({ handleShowMapPage, memories, handleShowDialog, fetchLoading, g
                         FabProps={{ style: { backgroundColor: "#FFB6C1" } }}
                     >
                         <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => handleShowMapPage(true)} />
+                        <SpeedDialAction key="gallery" icon={<img src={filmIcon} alt='갤러리' />} tooltipTitle="갤러리" onClick={() => handleShowGallery(true)} />
                         <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowDialog(true)} />
                     </SpeedDial>
                 </Swiper>
