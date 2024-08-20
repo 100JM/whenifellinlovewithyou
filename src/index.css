@@ -18,6 +18,7 @@ body {
 #root {
   max-width: 480px;
   max-height: 875px;
+  position: relative;
 }
 
 .swiper-button-prev,
@@ -133,4 +134,5 @@ body {
   position: absolute;
   bottom: 0;
   z-index: 100;
+  cursor: pointer;
 }
