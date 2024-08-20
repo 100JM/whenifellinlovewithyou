@@ -5,6 +5,7 @@ import { db } from "./firebase";
 import MapPages from "./components/MapPage";
 import Gallery from "./components/Gallery";
 import AddMemory from "./components/AddMemory";
+import MemoryDialog from "./components/MemoryDialog";
 import Uploading from "./components/Uploading";
 
 import { CSSTransition } from 'react-transition-group';
@@ -16,10 +17,12 @@ function App() {
   const [showGallery, setShowGallery] = useState(false);
   const [memories, setMemories] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [showPhoto, setShowPhoto] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadinText, setUploadingText] = useState('');
+  const [uploadingText, setUploadingText] = useState('');
   const [selectedMemory, setSelectedMemory] = useState({});
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -60,6 +63,16 @@ function App() {
     }
   };
 
+  const handleShowPhoto = (isShow, photoInfo) => {
+    setShowPhoto(isShow);
+
+    if (photoInfo) {
+      setSelectedPhoto(photoInfo);
+    } else {
+      setSelectedPhoto(null);
+    }
+  };
+
   function convertDateStringToDate(dateString) {
     const formattedDateString = dateString.replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1-$2-$3');
 
@@ -86,7 +99,8 @@ function App() {
 
   return (
     <>
-      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory}/>
+      <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
+      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory} />
       <CSSTransition
         in={!showMapPage && !showGallery}
         timeout={300}
@@ -126,9 +140,9 @@ function App() {
         classNames="slide"
         unmountOnExit
       >
-        <Gallery handleShowGallery={handleShowGallery} memories={memories}/>
+        <Gallery handleShowGallery={handleShowGallery} memories={memories} handleShowPhoto={handleShowPhoto} />
       </CSSTransition>
-      {isUploading && <Uploading uploadinText={uploadinText} />}
+      {isUploading && <Uploading uploadingText={uploadingText} />}
     </>
   );
 }
