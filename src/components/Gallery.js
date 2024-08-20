@@ -1,11 +1,11 @@
 import calendarIcon from '../assets/calendar-32x32.png';
 
-const Gallery = ({ handleShowGallery, memories }) => {
+const Gallery = ({ handleShowGallery, memories, handleShowPhoto }) => {
     return (
         <div className="w-full h-full overflow-y-auto">
             {
                 memories.length === 0 &&
-                <div className="w-full h-full flex justify-center items-center slideDiv">
+                <div className="w-full h-full flex justify-center items-center">
                     등록된 추억이 없어요🥲
                 </div>
             }
@@ -15,8 +15,8 @@ const Gallery = ({ handleShowGallery, memories }) => {
                     {
                         memories.map((m) => {
                             return (
-                                <div key={m.id} className="aspect-square flex items-center justify-center">
-                                    <img src={m.image} className="w-full h-full object-cover"/>
+                                <div key={m.id} aria-hidden={false} className="aspect-square flex items-center justify-center" onClick={() => handleShowPhoto(true, m)}>
+                                    <img src={m.image} alt={m.date} className="w-full h-full object-cover" />
                                 </div>
                             );
                         })
