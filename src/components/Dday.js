@@ -11,7 +11,7 @@ const Dday = () => {
     });
 
     useEffect(() => {
-        const startDate = new Date('2023-10-28');
+        const startDate = new Date('2023-10-28T00:00:00');
 
         const intervalId = setInterval(() => {
             const currentDate = new Date();
@@ -32,6 +32,7 @@ const Dday = () => {
         }, 1000);
 
         return () => clearInterval(intervalId);
+
     }, []);
 
     return (
