@@ -7,10 +7,11 @@ import Gallery from "./components/Gallery";
 import AddMemory from "./components/AddMemory";
 import MemoryDialog from "./components/MemoryDialog";
 import Uploading from "./components/Uploading";
-
-import { CSSTransition } from 'react-transition-group';
 import Dday from "./components/Dday";
 import Slider from './components/Slider';
+
+// import { CSSTransition } from 'react-transition-group';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
   const [showMapPage, setShowMapPage] = useState(false);
@@ -49,7 +50,7 @@ function App() {
     setShowMapPage(isShow);
     setShowGallery(false);
   };
-  
+
   const handleShowGallery = (isShow) => {
     setShowGallery(isShow);
     setShowMapPage(false);
@@ -58,7 +59,7 @@ function App() {
   const handleShowDialog = (isShow) => {
     setShowAdd(isShow)
 
-    if(!isShow) {
+    if (!isShow) {
       setSelectedMemory({});
     }
   };
@@ -95,13 +96,87 @@ function App() {
     setSelectedMemory(memory);
 
     setShowAdd(true);
-  }
+  };
+
+  const subVariants = {
+    hidden: { x: '100%', opacity: 0 },
+    visible: { x: '0%', opacity: 1 },
+    exit: { x: '100%', opacity: 0 },
+  };
+
+  const mainVariants = {
+    hidden: { x: '-100%', opacity: 0 },
+    visible: { x: '0%', opacity: 1 },
+    exit: { x: '-100%', opacity: 0 },
+  };
 
   return (
     <>
       <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
       <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory} />
-      <CSSTransition
+      <AnimatePresence>
+        {!showMapPage && !showGallery && (
+          <motion.div
+            key="default-page"
+            variants={mainVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.5 }}
+            className="w-full h-full absolute"
+          >
+            <div className="w-full py-3 px-10 dday" style={{ height: "35%" }}>
+              <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
+                <div className="h-full grid items-center">
+                  <div className="text-center">
+                    우리가 처음 만난 날
+                  </div>
+                  <div className="text-center" style={{ color: "#898A8D" }}>
+                    2023년 10월 28일 토요일 🥰
+                  </div>
+                </div>
+              </div>
+              <Dday />
+            </div>
+            <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
+              <Slider handleShowMapPage={handleShowMapPage} handleShowGallery={handleShowGallery} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showMapPage && !showGallery && (
+          <motion.div
+            key="map-page"
+            variants={subVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.5 }}
+            className="w-full h-full absolute"
+          >
+            <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showGallery && !showMapPage && (
+          <motion.div
+            key="gallery-page"
+            variants={subVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.5 }}
+            className="w-full h-full absolute overflow-y-auto"
+          >
+            <Gallery handleShowGallery={handleShowGallery} memories={memories} handleShowPhoto={handleShowPhoto} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {isUploading && <Uploading uploadingText={uploadingText} />}
+
+      {/* <CSSTransition
         in={!showMapPage && !showGallery}
         timeout={300}
         classNames="slide"
@@ -122,7 +197,7 @@ function App() {
             <Dday />
           </div>
           <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-            <Slider handleShowMapPage={handleShowMapPage} handleShowGallery={handleShowGallery} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory}/>
+            <Slider handleShowMapPage={handleShowMapPage} handleShowGallery={handleShowGallery} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
           </div>
         </div>
       </CSSTransition>
@@ -141,8 +216,7 @@ function App() {
         unmountOnExit
       >
         <Gallery handleShowGallery={handleShowGallery} memories={memories} handleShowPhoto={handleShowPhoto} />
-      </CSSTransition>
-      {isUploading && <Uploading uploadingText={uploadingText} />}
+      </CSSTransition> */}
     </>
   );
 }
