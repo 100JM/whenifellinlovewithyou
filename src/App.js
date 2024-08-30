@@ -24,6 +24,7 @@ function App() {
   const [uploadingText, setUploadingText] = useState('');
   const [selectedMemory, setSelectedMemory] = useState({});
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [isFadeIn, setIsFadeIn] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -42,6 +43,8 @@ function App() {
       setMemories(sortDocs);
       setFetchLoading(false);
     });
+    
+    if (isFadeIn) setIsFadeIn(false);
 
     return () => unsubscribe();
   }, []);
@@ -98,6 +101,17 @@ function App() {
     setShowAdd(true);
   };
 
+  const fadeVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0 }
+  };
+
+  const fadeTransitionSettings = {
+    duration: 0.8,  // 애니메이션 지속 시간 (초 단위)
+    ease: "easeInOut"  // 부드러운 전환을 위한 easing
+  };
+
   const subVariants = {
     hidden: { x: '100%', opacity: 0 },
     visible: { x: '0%', opacity: 1 },
@@ -110,6 +124,13 @@ function App() {
     exit: { x: '-100%', opacity: 0 },
   };
 
+  const transitionSettings = {
+    type: "spring",
+    damping: 15,     // 감쇠 효과로 애니메이션이 얼마나 빨리 정착할지 조절 (높을수록 천천히 멈춤)
+    stiffness: 60,  // 스프링의 강도, 낮을수록 느리게 반응하고 부드러움
+    duration: 0.5    // 애니메이션 지속 시간
+  };
+
   return (
     <>
       <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
@@ -118,11 +139,11 @@ function App() {
         {!showMapPage && !showGallery && (
           <motion.div
             key="default-page"
-            variants={mainVariants}
+            variants={(isFadeIn ? fadeVariants : mainVariants)}
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ duration: 0.5 }}
+            transition={(isFadeIn ? fadeTransitionSettings : transitionSettings)}
             className="w-full h-full absolute"
           >
             <div className="w-full py-3 px-10 dday" style={{ height: "35%" }}>
@@ -152,7 +173,7 @@ function App() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ duration: 0.5 }}
+            transition={transitionSettings}
             className="w-full h-full absolute"
           >
             <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
@@ -167,7 +188,7 @@ function App() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ duration: 0.5 }}
+            transition={transitionSettings}
             className="w-full h-full absolute overflow-y-auto"
           >
             <Gallery handleShowGallery={handleShowGallery} memories={memories} handleShowPhoto={handleShowPhoto} />
@@ -175,48 +196,6 @@ function App() {
         )}
       </AnimatePresence>
       {isUploading && <Uploading uploadingText={uploadingText} />}
-
-      {/* <CSSTransition
-        in={!showMapPage && !showGallery}
-        timeout={300}
-        classNames="slide"
-        unmountOnExit
-      >
-        <div className="w-full h-full">
-          <div className="w-full py-3 px-10 dday" style={{ height: "35%" }}>
-            <div className="w-full h-1/4 p-2 rounded-xl flex justify-center items-center" style={{ boxShadow: "0px 2px 20px rgba(0, 0, 0, 0.1)" }}>
-              <div className="h-full grid items-center">
-                <div className="text-center">
-                  우리가 처음 만난 날
-                </div>
-                <div className="text-center" style={{ color: "#898A8D" }}>
-                  2023년 10월 28일 토요일 🥰
-                </div>
-              </div>
-            </div>
-            <Dday />
-          </div>
-          <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-            <Slider handleShowMapPage={handleShowMapPage} handleShowGallery={handleShowGallery} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
-          </div>
-        </div>
-      </CSSTransition>
-      <CSSTransition
-        in={showMapPage && !showGallery}
-        timeout={300}
-        classNames="slide"
-        unmountOnExit
-      >
-        <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
-      </CSSTransition>
-      <CSSTransition
-        in={showGallery && !showMapPage}
-        timeout={300}
-        classNames="slide"
-        unmountOnExit
-      >
-        <Gallery handleShowGallery={handleShowGallery} memories={memories} handleShowPhoto={handleShowPhoto} />
-      </CSSTransition> */}
     </>
   );
 }
