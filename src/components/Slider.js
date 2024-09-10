@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import useShowComponentStore from '../store/show';
 
 import LeafletMaps from './LeafletMaps';
 
@@ -22,13 +23,15 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ handleShowMapPage, handleShowGallery, memories, handleShowDialog, fetchLoading, getSelectedMemoryInfo, selectedMemory }) => {
+const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInfo, selectedMemory }) => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
     const [isZoomed, setIsZoomed] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const [playingIndex, setPlayingIndex] = useState(null);
+
+    const {setMapPage, setGalleryPage} = useShowComponentStore();
 
     const swiperRef = useRef(null);
     const videoRefs = useRef([]);
@@ -179,8 +182,8 @@ const Slider = ({ handleShowMapPage, handleShowGallery, memories, handleShowDial
                         direction="up"
                         FabProps={{ style: { backgroundColor: "#FFB6C1" } }}
                     >
-                        <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => handleShowMapPage(true)} />
-                        <SpeedDialAction key="gallery" icon={<img src={filmIcon} alt='갤러리' />} tooltipTitle="갤러리" onClick={() => handleShowGallery(true)} />
+                        <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => setMapPage(true)} />
+                        <SpeedDialAction key="gallery" icon={<img src={filmIcon} alt='갤러리' />} tooltipTitle="갤러리" onClick={() => setGalleryPage(true)} />
                         <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowDialog(true)} />
                     </SpeedDial>
                 </Swiper>

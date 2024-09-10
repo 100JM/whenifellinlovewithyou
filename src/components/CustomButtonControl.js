@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
+import useShowComponentStore from '../store/show';
 
 import L from 'leaflet';
 import calendarIcon from '../assets/calendar-32x32.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLocationCrosshairs } from '@fortawesome/free-solid-svg-icons';
 
-const CustomButtonControl = ({ handleShowMapPage }) => {
+const CustomButtonControl = () => {
     const map = useMap();
     const currentMaker = useRef(null);
+    const {mapPage, setMapPage} = useShowComponentStore();
 
     useEffect(() => {
         const customControl = L.control({ position: 'bottomleft' });
@@ -27,7 +27,7 @@ const CustomButtonControl = ({ handleShowMapPage }) => {
             L.DomEvent.on(button, 'click', function (e) {
                 L.DomEvent.stopPropagation(e);
                 L.DomEvent.preventDefault(e);
-                handleShowMapPage(false);
+                setMapPage(false);
             });
 
             return div;
@@ -74,7 +74,7 @@ const CustomButtonControl = ({ handleShowMapPage }) => {
             map.removeControl(customControl);
             map.removeControl(myLocation);
         };
-    }, [map, handleShowMapPage]);
+    }, [map, mapPage]);
 
     return null;
 };

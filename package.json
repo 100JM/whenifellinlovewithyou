@@ -39,7 +39,8 @@
     "react-transition-group": "^4.4.5",
     "swiper": "^11.1.4",
     "web-vitals": "^2.1.4",
-    "whenifellinlovewithyou": "file:"
+    "whenifellinlovewithyou": "file:",
+    "zustand": "^4.5.5"
   },
   "scripts": {
     "start": "react-scripts start",

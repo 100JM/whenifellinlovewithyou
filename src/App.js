@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
+import useShowComponentStore from "./store/show";
 
 import MapPages from "./components/MapPage";
 import Gallery from "./components/Gallery";
@@ -14,8 +15,6 @@ import Slider from './components/Slider';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
-  const [showMapPage, setShowMapPage] = useState(false);
-  const [showGallery, setShowGallery] = useState(false);
   const [memories, setMemories] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [showPhoto, setShowPhoto] = useState(false);
@@ -25,6 +24,8 @@ function App() {
   const [selectedMemory, setSelectedMemory] = useState({});
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [isFadeIn, setIsFadeIn] = useState(true);
+
+  const {mapPage, galleryPage} = useShowComponentStore();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -48,16 +49,6 @@ function App() {
 
     return () => unsubscribe();
   }, []);
-
-  const handleShowMapPage = (isShow) => {
-    setShowMapPage(isShow);
-    setShowGallery(false);
-  };
-
-  const handleShowGallery = (isShow) => {
-    setShowGallery(isShow);
-    setShowMapPage(false);
-  };
 
   const handleShowDialog = (isShow) => {
     setShowAdd(isShow)
@@ -136,7 +127,7 @@ function App() {
       <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
       <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory} />
       <AnimatePresence>
-        {!showMapPage && !showGallery && (
+        {!mapPage && !galleryPage && (
           <motion.div
             key="default-page"
             variants={(isFadeIn ? fadeVariants : mainVariants)}
@@ -160,13 +151,13 @@ function App() {
               <Dday />
             </div>
             <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-              <Slider handleShowMapPage={handleShowMapPage} handleShowGallery={handleShowGallery} memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
+              <Slider memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {showMapPage && !showGallery && (
+        {mapPage && !galleryPage && (
           <motion.div
             key="map-page"
             variants={subVariants}
@@ -176,12 +167,12 @@ function App() {
             transition={transitionSettings}
             className="w-full h-full absolute"
           >
-            <MapPages handleShowMapPage={handleShowMapPage} memories={memories} />
+            <MapPages memories={memories} />
           </motion.div>
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {showGallery && !showMapPage && (
+        {galleryPage && !mapPage && (
           <motion.div
             key="gallery-page"
             variants={subVariants}
@@ -191,7 +182,7 @@ function App() {
             transition={transitionSettings}
             className="w-full h-full absolute overflow-y-auto"
           >
-            <Gallery handleShowGallery={handleShowGallery} memories={memories} handleShowPhoto={handleShowPhoto} />
+            <Gallery memories={memories} handleShowPhoto={handleShowPhoto} />
           </motion.div>
         )}
       </AnimatePresence>

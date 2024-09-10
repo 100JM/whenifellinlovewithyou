@@ -12,7 +12,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const MapPages = ({ handleShowMapPage, memories }) => {
+const MapPages = ({ memories }) => {
     return (
         <div style={{ height: '100%', width: '100%' }}>
             <MapContainer center={[37.378129052605125, 123.60549110411648]} zoom={3} style={{ height: '100%', width: '100%' }} attributionControl={false}>
@@ -46,7 +46,7 @@ const MapPages = ({ handleShowMapPage, memories }) => {
                     })
                     
                 }
-                <CustomButtonControl handleShowMapPage={handleShowMapPage} />
+                <CustomButtonControl />
             </MapContainer>
         </div>
     );
