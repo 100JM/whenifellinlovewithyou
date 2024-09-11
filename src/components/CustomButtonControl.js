@@ -8,7 +8,12 @@ import calendarIcon from '../assets/calendar-32x32.png';
 const CustomButtonControl = () => {
     const map = useMap();
     const currentMaker = useRef(null);
-    const {mapPage, setMapPage} = useShowComponentStore();
+    const {mapPage, setMapPage, setGalleryPage} = useShowComponentStore();
+
+    const hideMapPage = () => {
+        setGalleryPage(false);
+        setMapPage(false);
+    };
 
     useEffect(() => {
         const customControl = L.control({ position: 'bottomleft' });
@@ -27,7 +32,7 @@ const CustomButtonControl = () => {
             L.DomEvent.on(button, 'click', function (e) {
                 L.DomEvent.stopPropagation(e);
                 L.DomEvent.preventDefault(e);
-                setMapPage(false);
+                hideMapPage();
             });
 
             return div;

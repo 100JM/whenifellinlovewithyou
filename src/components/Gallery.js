@@ -3,7 +3,12 @@ import useShowComponentStore from '../store/show';
 import calendarIcon from '../assets/calendar-32x32.png';
 
 const Gallery = ({ memories, handleShowPhoto }) => {
-    const {setGalleryPage} = useShowComponentStore();
+    const {setGalleryPage, setMapPage} = useShowComponentStore();
+
+    const hideGalleryPage = () => {
+        setGalleryPage(false);
+        setMapPage(false);
+    };
 
     return (
         <div className="w-full h-full overflow-y-auto">
@@ -27,7 +32,7 @@ const Gallery = ({ memories, handleShowPhoto }) => {
                     }
                 </div>
             }
-            <div className="gallery-custom-button" onClick={() => setGalleryPage(false)}>
+            <div className="gallery-custom-button" onClick={() => hideGalleryPage()}>
                 <img src={calendarIcon} alt="D-day" />
             </div>
         </div>

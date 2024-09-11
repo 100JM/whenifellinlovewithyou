@@ -6,6 +6,7 @@ import Cropper from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import useShowComponentStore from '../store/show';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
@@ -52,7 +53,7 @@ function MapEvents({ onClick }) {
     return null;
 };
 
-const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadingText, selectedMemory }) => {
+const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
     const today = new Date().toISOString();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
@@ -81,6 +82,8 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
     const addrSearchBtnRef = useRef();
     const addrSearchInputRef = useRef();
     const cropperRef = useRef(null);
+
+    const {setUploadingState} = useShowComponentStore();
 
     dayjs.extend(customParseFormat);
 
@@ -188,12 +191,10 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
         const ffmpeg = new FFmpeg({ log: true });
         let thumbnailFile;
         try {
-            handleUploadingBar(true);
-            
-            const duration = await getVideoDuration(file);
-            const thumbnailTime = Math.floor(duration / 2);
+            setUploadingState({isUploading: true, uploadingText: '동영상 읽는 중...'});
 
-            handleUploadingText('동영상 읽는 중...');
+            const duration = await getVideoDuration(file);
+            const thumbnailTime = Math.ceil(duration / 2);
 
             // FFmpeg 로드
             console.log('FFmpeg 로드 시작');
@@ -204,15 +205,15 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
             console.log('파일 쓰기 시작');
             await ffmpeg.writeFile('input.mp4', await fetchFile(file));
             console.log('파일 쓰기 완료');
-            
-            handleUploadingText('썸네일 생성 중...');
+
+            setUploadingState({uploadingText: '썸네일 생성 중...'});
 
             // 비디오 파일에서 1초 지점의 프레임을 추출하여 썸네일 생성
             console.log('썸네일 생성 시작');
             await ffmpeg.exec(['-i', 'input.mp4', '-ss', `00:00:0${thumbnailTime}`, '-frames:v', '1', 'output.jpeg']);
             console.log('썸네일 생성 완료');
 
-            handleUploadingText('작업 마무리 중...');
+            setUploadingState({uploadingText: '작업 마무리 중...'});
 
             // 생성된 썸네일 파일 읽기
             console.log('결과 파일 읽기 시작');
@@ -236,8 +237,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
             console.error('FFmpeg 실행 중 오류 발생:', error);
             throw error;
         } finally {
-            handleUploadingText('');
-            handleUploadingBar(false);
+            setUploadingState({isUploading: false, uploadingText: ''});
             try {
                 ffmpeg.terminate();
                 console.log('종료');
@@ -451,8 +451,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
             locationName: locationName
         }
 
-        handleUploadingBar(true);
-        handleUploadingText('업로드 중...');
+        setUploadingState({isUploading: true, uploadingText: '업로드 중...'});
 
         try {
             if(uploadedFile.type.indexOf('video') !== 0) {
@@ -466,8 +465,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
             console.error("Error adding document:", error);
             alert('오류 발생🥲 남자친구에게 문의하세요');
         } finally {
-            handleUploadingText('');
-            handleUploadingBar(false);
+            setUploadingState({isUploading: false, uploadingText: ''});
             closeDialog();
         }
     };
@@ -487,8 +485,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
             locationName: locationName
         };
 
-        handleUploadingBar(true);
-        handleUploadingText('업데이트 중...');
+        setUploadingState({isUploading: true, uploadingText: '업데이트 중...'});
 
         try {
             if(uploadedFile) {
@@ -506,8 +503,7 @@ const AddMemory = ({ isOpen, handleShowDialog, handleUploadingBar, handleUploadi
             console.error("Error adding document:", error);
             alert('오류 발생🥲 남자친구에게 문의하세요');
         } finally {
-            handleUploadingText('');
-            handleUploadingBar(false);
+            setUploadingState({isUploading: false, uploadingText: ''});
             closeDialog();
         }
     };

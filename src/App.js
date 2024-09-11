@@ -16,16 +16,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
   const [memories, setMemories] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
   const [showPhoto, setShowPhoto] = useState(false);
-  const [fetchLoading, setFetchLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadingText, setUploadingText] = useState('');
   const [selectedMemory, setSelectedMemory] = useState({});
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [isFadeIn, setIsFadeIn] = useState(true);
 
-  const {mapPage, galleryPage} = useShowComponentStore();
+  const {mapPage, galleryPage, addDialog, setAddDialog, setIsFetch, uploadingState} = useShowComponentStore();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -42,7 +38,7 @@ function App() {
       });
 
       setMemories(sortDocs);
-      setFetchLoading(false);
+      setIsFetch(false);
     });
     
     if (isFadeIn) setIsFadeIn(false);
@@ -51,7 +47,7 @@ function App() {
   }, []);
 
   const handleShowDialog = (isShow) => {
-    setShowAdd(isShow)
+    setAddDialog(isShow)
 
     if (!isShow) {
       setSelectedMemory({});
@@ -74,14 +70,6 @@ function App() {
     return new Date(formattedDateString);
   };
 
-  const handleUploadingBar = (isShow) => {
-    setIsUploading(isShow);
-  };
-
-  const handleUploadingText = (text) => {
-    setUploadingText(text);
-  };
-
   const getSelectedMemoryInfo = (id) => {
     const memory = memories.find((m) => {
       return m.id === id;
@@ -89,7 +77,7 @@ function App() {
 
     setSelectedMemory(memory);
 
-    setShowAdd(true);
+    setAddDialog(true);
   };
 
   const fadeVariants = {
@@ -125,7 +113,7 @@ function App() {
   return (
     <>
       <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
-      <AddMemory isOpen={showAdd} handleShowDialog={handleShowDialog} handleUploadingBar={handleUploadingBar} handleUploadingText={handleUploadingText} selectedMemory={selectedMemory} />
+      <AddMemory isOpen={addDialog} handleShowDialog={handleShowDialog} selectedMemory={selectedMemory} />
       <AnimatePresence>
         {!mapPage && !galleryPage && (
           <motion.div
@@ -151,7 +139,7 @@ function App() {
               <Dday />
             </div>
             <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-              <Slider memories={memories} handleShowDialog={handleShowDialog} fetchLoading={fetchLoading} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
+              <Slider memories={memories} handleShowDialog={handleShowDialog} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
             </div>
           </motion.div>
         )}
@@ -186,7 +174,7 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      {isUploading && <Uploading uploadingText={uploadingText} />}
+      {uploadingState.isUploading && <Uploading />}
     </>
   );
 }

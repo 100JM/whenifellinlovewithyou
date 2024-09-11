@@ -23,7 +23,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInfo, selectedMemory }) => {
+const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMemory }) => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
@@ -31,10 +31,20 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
     const [activeIndex, setActiveIndex] = useState(0);
     const [playingIndex, setPlayingIndex] = useState(null);
 
-    const {setMapPage, setGalleryPage} = useShowComponentStore();
+    const { setMapPage, setGalleryPage, isFetch } = useShowComponentStore();
 
     const swiperRef = useRef(null);
     const videoRefs = useRef([]);
+    
+    const showMapPage = () => {
+        setMapPage(true);
+        setGalleryPage(false);
+    };
+
+    const showGalleryPage = () => {
+        setMapPage(false);
+        setGalleryPage(true);
+    }
 
     const handleZoomed = useCallback((zoomed) => {
         setIsZoomed(zoomed);
@@ -69,11 +79,28 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
                 swiperRef.current.autoplay.start();
             }
         }
+
+        return () => {
+            if (swiperRef.current && swiperRef.current.autoplay) {
+                swiperRef.current.autoplay.stop();
+            }
+        };
+
     }, [showMap, isZoomed, playingIndex, selectedMemory.id]);
 
-    const handleSwiperInit = (swiper) => {
+    // useEffect(() => {
+    //     return () => {
+    //         videoRefs.current.forEach(video => {
+    //             if (video) {
+    //                 video.pause();
+    //             }
+    //         });
+    //     };
+    // }, []);
+
+    const handleSwiperInit = useCallback((swiper) => {
         swiperRef.current = swiper;
-    };
+    }, []);
 
     const handlePlay = (index) => {
         setPlayingIndex(index);
@@ -106,21 +133,21 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
                     onInit={handleSwiperInit}
                     onSlideChange={handleSlideChange}
                 >
-                    {fetchLoading &&
+                    {isFetch &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
                                 데이터를 불러오는 중...💻
                             </div>
                         </SwiperSlide>
                     }
-                    {memories.length === 0 && !fetchLoading &&
+                    {memories.length === 0 && !isFetch &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
                                 등록된 추억이 없어요🥲
                             </div>
                         </SwiperSlide>
                     }
-                    {memories.length > 0 && !fetchLoading &&
+                    {memories.length > 0 && !isFetch &&
                         memories.map((i, index) => {
                             if (!i.video) {
                                 return (
@@ -136,7 +163,7 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
                                             </div>
                                             <div className="absolute right-2 top-1 locationBtn">
                                                 <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
-                                                    <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{color: "#FFB6C1"}}/>
+                                                    <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{ color: "#FFB6C1" }} />
                                                 </button>
                                             </div>
                                         </div>
@@ -163,7 +190,7 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
                                             </div>
                                             <div className="absolute right-2 top-1 locationBtn">
                                                 <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
-                                                    <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{color: "#FFB6C1"}}/>
+                                                    <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{ color: "#FFB6C1" }} />
                                                 </button>
                                             </div>
                                         </div>
@@ -182,8 +209,8 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
                         direction="up"
                         FabProps={{ style: { backgroundColor: "#FFB6C1" } }}
                     >
-                        <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => setMapPage(true)} />
-                        <SpeedDialAction key="gallery" icon={<img src={filmIcon} alt='갤러리' />} tooltipTitle="갤러리" onClick={() => setGalleryPage(true)} />
+                        <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => showMapPage()} />
+                        <SpeedDialAction key="gallery" icon={<img src={filmIcon} alt='갤러리' />} tooltipTitle="갤러리" onClick={() => showGalleryPage()} />
                         <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowDialog(true)} />
                     </SpeedDial>
                 </Swiper>
@@ -198,13 +225,13 @@ const Slider = ({ memories, handleShowDialog, fetchLoading, getSelectedMemoryInf
                 {mapCenter && mapCenter.length > 0 ?
                     <LeafletMaps mapCenter={mapCenter} mapPopup={mapPopup} />
                     :
-                    <div className="p-3 rounded flex justify-center items-center text-center" style={{ height: '300px', width: '100%' }}>
+                    <div className="p-3 rounded flex flex-col justify-center items-center text-center" style={{ height: '300px', width: '100%' }}>
                         {mapPopup && mapPopup.split('<br />').map((line, index) => {
                             return (
-                                <>
+                                <div className="w-full" key={line}>
                                     {line}
                                     <br />
-                                </>
+                                </div>
                             );
                         })}
                         위치 정보가 없습니다🥲
