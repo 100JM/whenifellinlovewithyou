@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/whenifellinlovewithyou/static/css/main.31f53d84.css",
-    "main.js": "/whenifellinlovewithyou/static/js/main.9a2438e1.js",
+    "main.css": "/whenifellinlovewithyou/static/css/main.29f79957.css",
+    "main.js": "/whenifellinlovewithyou/static/js/main.2ddc4821.js",
     "static/js/726.8c11f7b5.chunk.js": "/whenifellinlovewithyou/static/js/726.8c11f7b5.chunk.js",
     "static/js/453.3154d1a9.chunk.js": "/whenifellinlovewithyou/static/js/453.3154d1a9.chunk.js",
     "index.html": "/whenifellinlovewithyou/index.html",
-    "main.31f53d84.css.map": "/whenifellinlovewithyou/static/css/main.31f53d84.css.map",
-    "main.9a2438e1.js.map": "/whenifellinlovewithyou/static/js/main.9a2438e1.js.map",
+    "main.29f79957.css.map": "/whenifellinlovewithyou/static/css/main.29f79957.css.map",
+    "main.2ddc4821.js.map": "/whenifellinlovewithyou/static/js/main.2ddc4821.js.map",
     "726.8c11f7b5.chunk.js.map": "/whenifellinlovewithyou/static/js/726.8c11f7b5.chunk.js.map",
     "453.3154d1a9.chunk.js.map": "/whenifellinlovewithyou/static/js/453.3154d1a9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.31f53d84.css",
-    "static/js/main.9a2438e1.js"
+    "static/css/main.29f79957.css",
+    "static/js/main.2ddc4821.js"
   ]
 }
