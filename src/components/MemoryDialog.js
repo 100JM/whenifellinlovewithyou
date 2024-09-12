@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ClipLoader } from 'react-spinners';
+import useMemories from '../store/memory';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +11,8 @@ import DialogContent from '@mui/material/DialogContent';
 const MemoryDialog = ({ showPhoto, handleShowPhoto, selectedPhoto }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
+    const {photoDialog} = useMemories();
+
     const handleMediaLoad = () => {
         setIsLoaded(true);
     };
@@ -19,7 +22,7 @@ const MemoryDialog = ({ showPhoto, handleShowPhoto, selectedPhoto }) => {
             setIsLoaded(false);
         }
     }, [showPhoto]);
-
+    console.log(photoDialog);
     return (
         <Dialog
             open={showPhoto}

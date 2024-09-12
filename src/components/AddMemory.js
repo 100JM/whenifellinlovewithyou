@@ -7,6 +7,7 @@ import 'cropperjs/dist/cropper.css';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 import useShowComponentStore from '../store/show';
+import useMemories from '../store/memory';
 
 import ChangeView from './ChangeView';
 import KaKaoMap from './KaKaoMap';
@@ -53,7 +54,7 @@ function MapEvents({ onClick }) {
     return null;
 };
 
-const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
+const AddMemory = () => {
     const today = new Date().toISOString();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
@@ -83,19 +84,22 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
     const addrSearchInputRef = useRef();
     const cropperRef = useRef(null);
 
-    const {setUploadingState} = useShowComponentStore();
+    const {addDialog, setAddDialog, setUploadingState} = useShowComponentStore();
+    const {selectedOurMemory, setSelectedOurMemory} = useMemories();
 
     dayjs.extend(customParseFormat);
 
     useEffect(() => {
-        if(selectedMemory.id) {
-            setReplacedAlt(selectedMemory.alt.replace(/<br \/>/g, '\n'));
-            setLocationName(selectedMemory.locationName);
+        if(selectedOurMemory.id) {
+            setReplacedAlt(selectedOurMemory.alt.replace(/<br \/>/g, '\n'));
+            setLocationName(selectedOurMemory.locationName);
         }
-    }, [selectedMemory.id]);
+    }, [selectedOurMemory.id]);
 
     const closeDialog = () => {
-        handleShowDialog(false);
+        // handleShowDialog(false);
+        setAddDialog(false);
+        setSelectedOurMemory({});
         setUploadedFile(null);
         setImageSrc(null);
         setThumbnail(null);
@@ -297,8 +301,8 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
         setSelectedAddr();
         setIsRemoveLocation(false);
         
-        if(selectedMemory.id) {
-            setLocationName(selectedMemory.locationName);
+        if(selectedOurMemory.id) {
+            setLocationName(selectedOurMemory.locationName);
         }else {
             setLocationName('');
         }
@@ -481,7 +485,7 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
         const data = {
             date: memoriesRef.current.date.value,
             alt: memoriesRef.current.alt.value.replace(/\n/g, '<br />'),
-            center: isRemoveLocation ? [] : selectedMemory.id && !selectedAddr ? selectedMemory.center : (selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []),
+            center: isRemoveLocation ? [] : selectedOurMemory.id && !selectedAddr ? selectedOurMemory.center : (selectedAddr ? (selectedAddr.lat ? [Number(selectedAddr.lat), Number(selectedAddr.lon)] : [Number(selectedAddr.y), Number(selectedAddr.x)]) : []),
             locationName: locationName
         };
 
@@ -490,12 +494,12 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
         try {
             if(uploadedFile) {
                 if(uploadedFile.type.indexOf('video') !== 0) {
-                    await updateDocument(selectedMemory.id, data, uploadedFile);
+                    await updateDocument(selectedOurMemory.id, data, uploadedFile);
                 }else {
-                    await updateDocument(selectedMemory.id, data, thumbnail, uploadedFile);
+                    await updateDocument(selectedOurMemory.id, data, thumbnail, uploadedFile);
                 }
             }else {
-                await updateDocument(selectedMemory.id, data);
+                await updateDocument(selectedOurMemory.id, data);
             }
 
             alert('추억이 수정되었습니다🤍');
@@ -510,7 +514,7 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
 
     return (
         <Dialog
-            open={isOpen}
+            open={addDialog}
             // onClose={closeDialog}
             maxWidth="xs"
             fullWidth={true}
@@ -525,7 +529,7 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
                             <MobileDatePicker
                                 format="YYYY년 MM월 DD일"
                                 dayOfWeekFormatter={(day) => ['일', '월', '화', '수', '목', '금', '토'][day]}
-                                defaultValue={selectedMemory.id ? dayjs(selectedMemory.date, 'YYYY년 MM월 DD일') : dayjs(today)}
+                                defaultValue={selectedOurMemory.id ? dayjs(selectedOurMemory.date, 'YYYY년 MM월 DD일') : dayjs(today)}
                                 inputRef={(el) => { memoriesRef.current['date'] = el }}
                                 // onChange={(newValue) => setMemoriesValue('date', dayjs(newValue).format('YYYY-MM-DD'))}
                                 className="w-full"
@@ -548,7 +552,7 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
                         </div>
                         <div className="h-full flex items-center justify-center px-1" style={{ width: "calc(100% - 4rem)" }}>
                             <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                                {uploadedFile ? uploadedFile.name : (selectedMemory.id ? <button className="text-blue-400">등록된 사진/동영상</button> : '업로드된 파일이 없습니다.')}
+                                {uploadedFile ? uploadedFile.name : (selectedOurMemory.id ? <button className="text-blue-400">등록된 사진/동영상</button> : '업로드된 파일이 없습니다.')}
                             </span>
                         </div>
                     </div>
@@ -559,9 +563,9 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
                         </div>
                     }
                     {
-                        !uploadedFile && selectedMemory.id &&
+                        !uploadedFile && selectedOurMemory.id &&
                         <div>
-                            <img className="mt-2 max-w-full h-auto" src={(selectedMemory.video ? selectedMemory.video : selectedMemory.image)} alt="" />
+                            <img className="mt-2 max-w-full h-auto" src={(selectedOurMemory.video ? selectedOurMemory.video : selectedOurMemory.image)} alt="" />
                         </div>
                     }
                     <div className="mt-2">
@@ -570,11 +574,11 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
                         </div>
                     </div>
                     <div className="w-full h-16">
-                        <textarea className="w-full h-full px-1 comment" ref={(el) => { memoriesRef.current['alt'] = el }} defaultValue={selectedMemory.id ? replacedAlt : ''}/>
+                        <textarea className="w-full h-full px-1 comment" ref={(el) => { memoriesRef.current['alt'] = el }} defaultValue={selectedOurMemory.id ? replacedAlt : ''}/>
                     </div>
                     <div className="mt-2">
                         <span>🗺️위치</span>
-                        {selectedMemory.id &&
+                        {selectedOurMemory.id &&
                             <button className="h-full float-right border rounded text-sm px-1 text-gray-500 flex justify-center items-center" onClick={handleRemoveLocation}>
                                 <span>위치 삭제🗑️</span>
                             </button>
@@ -664,8 +668,8 @@ const AddMemory = ({ isOpen, handleShowDialog, selectedMemory }) => {
                     <div className="mt-2">
                         <div className="w-full h-11 flex justify-end items-center">
                             <button type="button" className="border px-3 py-0.5 rounded bg-gray-300 border-gray-300 mr-2" onClick={closeDialog}>취소</button>
-                            {!selectedMemory.id && <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleSubmitMemory}>저장</button>}
-                            {selectedMemory.id && <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleUpdateMemory}>수정</button>}
+                            {!selectedOurMemory.id && <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleSubmitMemory}>저장</button>}
+                            {selectedOurMemory.id && <button type="button" className="border px-3 py-0.5 rounded" style={{ backgroundColor: "#FFB6C1", borderColor: "#FFB6C1" }} onClick={handleUpdateMemory}>수정</button>}
                         </div>
                     </div>
                 </div>

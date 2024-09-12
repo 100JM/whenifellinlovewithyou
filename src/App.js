@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import useShowComponentStore from "./store/show";
+import useMemories from "./store/memory";
 
 import MapPages from "./components/MapPage";
 import Gallery from "./components/Gallery";
@@ -15,13 +16,12 @@ import Slider from './components/Slider';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
-  const [memories, setMemories] = useState([]);
   const [showPhoto, setShowPhoto] = useState(false);
-  const [selectedMemory, setSelectedMemory] = useState({});
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [isFadeIn, setIsFadeIn] = useState(true);
 
-  const {mapPage, galleryPage, addDialog, setAddDialog, setIsFetch, uploadingState} = useShowComponentStore();
+  const {mapPage, galleryPage, uploadingState} = useShowComponentStore();
+  const {setOurMemories, setIsLoading, setError} = useMemories();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'Memories'), (snapshot) => {
@@ -37,22 +37,20 @@ function App() {
         return bd - ad;
       });
 
-      setMemories(sortDocs);
-      setIsFetch(false);
-    });
+      setOurMemories(sortDocs);
+      setIsLoading(false);
+    },
+    (error) => {
+      console.error('shnapshot error:', error);
+      setError(error);
+      setIsLoading(false);
+    }
+  );
     
     if (isFadeIn) setIsFadeIn(false);
 
     return () => unsubscribe();
   }, []);
-
-  const handleShowDialog = (isShow) => {
-    setAddDialog(isShow)
-
-    if (!isShow) {
-      setSelectedMemory({});
-    }
-  };
 
   const handleShowPhoto = (isShow, photoInfo) => {
     setShowPhoto(isShow);
@@ -68,16 +66,6 @@ function App() {
     const formattedDateString = dateString.replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1-$2-$3');
 
     return new Date(formattedDateString);
-  };
-
-  const getSelectedMemoryInfo = (id) => {
-    const memory = memories.find((m) => {
-      return m.id === id;
-    });
-
-    setSelectedMemory(memory);
-
-    setAddDialog(true);
   };
 
   const fadeVariants = {
@@ -104,7 +92,7 @@ function App() {
   };
 
   const transitionSettings = {
-    type: "spring",
+    type: "tween",
     damping: 15,     // 감쇠 효과로 애니메이션이 얼마나 빨리 정착할지 조절 (높을수록 천천히 멈춤)
     stiffness: 60,  // 스프링의 강도, 낮을수록 느리게 반응하고 부드러움
     duration: 0.5    // 애니메이션 지속 시간
@@ -113,10 +101,11 @@ function App() {
   return (
     <>
       <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
-      <AddMemory isOpen={addDialog} handleShowDialog={handleShowDialog} selectedMemory={selectedMemory} />
+      <AddMemory />
       <AnimatePresence>
         {!mapPage && !galleryPage && (
           <motion.div
+            layout
             key="default-page"
             variants={(isFadeIn ? fadeVariants : mainVariants)}
             initial="hidden"
@@ -139,7 +128,7 @@ function App() {
               <Dday />
             </div>
             <div className="w-full py-3 px-10 pt-0" style={{ height: "65%" }}>
-              <Slider memories={memories} handleShowDialog={handleShowDialog} getSelectedMemoryInfo={getSelectedMemoryInfo} selectedMemory={selectedMemory} />
+              <Slider />
             </div>
           </motion.div>
         )}
@@ -147,6 +136,7 @@ function App() {
       <AnimatePresence>
         {mapPage && !galleryPage && (
           <motion.div
+            layout
             key="map-page"
             variants={subVariants}
             initial="hidden"
@@ -155,13 +145,28 @@ function App() {
             transition={transitionSettings}
             className="w-full h-full absolute"
           >
-            <MapPages memories={memories} />
+            <MapPages />
+          </motion.div>
+        )}
+        {galleryPage && !mapPage && (
+          <motion.div
+            layout
+            key="gallery-page"
+            variants={subVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={transitionSettings}
+            className="w-full h-full absolute overflow-y-auto"
+          >
+            <Gallery handleShowPhoto={handleShowPhoto} />
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {galleryPage && !mapPage && (
           <motion.div
+            layout
             key="gallery-page"
             variants={subVariants}
             initial="hidden"
@@ -173,7 +178,7 @@ function App() {
             <Gallery memories={memories} handleShowPhoto={handleShowPhoto} />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
       {uploadingState.isUploading && <Uploading />}
     </>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import useShowComponentStore from '../store/show';
+import useMemories from '../store/memory';
 
 import LeafletMaps from './LeafletMaps';
 
@@ -23,7 +24,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMemory }) => {
+const Slider = () => {
     const [showMap, setShowMap] = useState(false);
     const [mapCenter, setMapCenter] = useState(null);
     const [mapPopup, setMapPopup] = useState('');
@@ -31,11 +32,40 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
     const [activeIndex, setActiveIndex] = useState(0);
     const [playingIndex, setPlayingIndex] = useState(null);
 
-    const { setMapPage, setGalleryPage, isFetch } = useShowComponentStore();
+    const { setMapPage, setGalleryPage, setAddDialog } = useShowComponentStore();
+    const { ourMemories, isLoading, error, selectedOurMemory, setSelectedOurMemory } = useMemories();
 
     const swiperRef = useRef(null);
     const videoRefs = useRef([]);
-    
+
+    useEffect(() => {
+        if (showMap || isZoomed || (playingIndex !== null) || selectedOurMemory.id) {
+            if (swiperRef.current && swiperRef.current.autoplay) {
+                swiperRef.current.autoplay.stop();
+            }
+        } else {
+            if (swiperRef.current && swiperRef.current.autoplay) {
+                swiperRef.current.autoplay.start();
+            }
+        }
+
+        return () => {
+            if (swiperRef.current && swiperRef.current.autoplay) {
+                swiperRef.current.autoplay.stop();
+            }
+        };
+
+    }, [showMap, isZoomed, playingIndex, selectedOurMemory.id]);
+
+    const getMemoryInfo = (id) => {
+        const memory = ourMemories.find((m) => {
+            return m.id === id;
+        });
+
+        setSelectedOurMemory(memory);
+        setAddDialog(true);
+    };
+
     const showMapPage = () => {
         setMapPage(true);
         setGalleryPage(false);
@@ -69,35 +99,6 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
         setPlayingIndex(null);
     };
 
-    useEffect(() => {
-        if (showMap || isZoomed || (playingIndex !== null) || selectedMemory.id) {
-            if (swiperRef.current && swiperRef.current.autoplay) {
-                swiperRef.current.autoplay.stop();
-            }
-        } else {
-            if (swiperRef.current && swiperRef.current.autoplay) {
-                swiperRef.current.autoplay.start();
-            }
-        }
-
-        return () => {
-            if (swiperRef.current && swiperRef.current.autoplay) {
-                swiperRef.current.autoplay.stop();
-            }
-        };
-
-    }, [showMap, isZoomed, playingIndex, selectedMemory.id]);
-
-    // useEffect(() => {
-    //     return () => {
-    //         videoRefs.current.forEach(video => {
-    //             if (video) {
-    //                 video.pause();
-    //             }
-    //         });
-    //     };
-    // }, []);
-
     const handleSwiperInit = useCallback((swiper) => {
         swiperRef.current = swiper;
     }, []);
@@ -122,7 +123,7 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
                     modules={[Navigation, Pagination, Autoplay]}
                     slidesPerView={1}
                     slidesPerGroup={1}
-                    loop={memories.length > 1}
+                    loop={ourMemories.length > 1}
                     speed={400}
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
                     pagination={{
@@ -133,22 +134,22 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
                     onInit={handleSwiperInit}
                     onSlideChange={handleSlideChange}
                 >
-                    {isFetch &&
+                    {isLoading &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
                                 데이터를 불러오는 중...💻
                             </div>
                         </SwiperSlide>
                     }
-                    {memories.length === 0 && !isFetch &&
+                    {ourMemories.length === 0 && !isLoading &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
                                 등록된 추억이 없어요🥲
                             </div>
                         </SwiperSlide>
                     }
-                    {memories.length > 0 && !isFetch &&
-                        memories.map((i, index) => {
+                    {ourMemories.length > 0 && !isLoading &&
+                        ourMemories.map((i, index) => {
                             if (!i.video) {
                                 return (
                                     <SwiperSlide key={i.id}>
@@ -162,7 +163,7 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
                                                 </button>
                                             </div>
                                             <div className="absolute right-2 top-1 locationBtn">
-                                                <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
+                                                <button title="수정" onClick={() => getMemoryInfo(i.id)}>
                                                     <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{ color: "#FFB6C1" }} />
                                                 </button>
                                             </div>
@@ -189,7 +190,7 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
                                                 </button>
                                             </div>
                                             <div className="absolute right-2 top-1 locationBtn">
-                                                <button title="수정" onClick={() => getSelectedMemoryInfo(i.id)}>
+                                                <button title="수정" onClick={() => getMemoryInfo(i.id)}>
                                                     <FontAwesomeIcon icon={faEllipsis} className="text-xl" style={{ color: "#FFB6C1" }} />
                                                 </button>
                                             </div>
@@ -211,7 +212,7 @@ const Slider = ({ memories, handleShowDialog, getSelectedMemoryInfo, selectedMem
                     >
                         <SpeedDialAction key="earth" icon={<img src={earthIcon} alt='추억들' />} tooltipTitle="추억들" onClick={() => showMapPage()} />
                         <SpeedDialAction key="gallery" icon={<img src={filmIcon} alt='갤러리' />} tooltipTitle="갤러리" onClick={() => showGalleryPage()} />
-                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => handleShowDialog(true)} />
+                        <SpeedDialAction key="addMemory" icon={<img src={plusIcon} alt='추가' />} tooltipTitle="추가" onClick={() => setAddDialog(true)} />
                     </SpeedDial>
                 </Swiper>
             </div>

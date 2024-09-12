@@ -4,6 +4,7 @@ import L from 'leaflet';
 
 import CustomButtonControl from './CustomButtonControl';
 import MapMarker from './MapMarker';
+import useMemories from '../store/memory';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -12,7 +13,9 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const MapPages = ({ memories }) => {
+const MapPages = () => {
+    const {ourMemories} = useMemories();
+
     return (
         <div style={{ height: '100%', width: '100%' }}>
             <MapContainer center={[37.378129052605125, 123.60549110411648]} zoom={3} style={{ height: '100%', width: '100%' }} attributionControl={false}>
@@ -22,7 +25,7 @@ const MapPages = ({ memories }) => {
                     language="ko"
                 />
                 {
-                    memories.filter((i) => {
+                    ourMemories.filter((i) => {
                         return i.center.length > 0;
                     }).map((m) => {
                         let customIcon;
