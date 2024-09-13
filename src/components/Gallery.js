@@ -3,18 +3,13 @@ import useMemories from '../store/memory';
 
 import calendarIcon from '../assets/calendar-32x32.png';
 
-const Gallery = ({ handleShowPhoto }) => {
+const Gallery = () => {
     const { setGalleryPage, setMapPage } = useShowComponentStore();
-    const { ourMemories, setPhotoDialog, setSelectEdOurPhoto } = useMemories();
+    const { ourMemories, setPhotoDialog } = useMemories();
 
     const hideGalleryPage = () => {
         setGalleryPage(false);
         setMapPage(false);
-    };
-
-    const handleClickPhoto = (isShow, info) => {
-        setPhotoDialog(isShow);
-        setSelectEdOurPhoto(info);
     };
 
     return (
@@ -31,7 +26,7 @@ const Gallery = ({ handleShowPhoto }) => {
                     {
                         ourMemories.map((m) => {
                             return (
-                                <div key={m.id} aria-hidden={false} className="aspect-square flex items-center justify-center" onClick={() => handleShowPhoto(true, m)}>
+                                <div key={m.id} aria-hidden={false} className="aspect-square flex items-center justify-center" onClick={() => setPhotoDialog({showPhotoDialog: true, photoInfo: m})}>
                                     <img src={m.image} alt={m.date} className="w-full h-full object-cover" />
                                 </div>
                             );

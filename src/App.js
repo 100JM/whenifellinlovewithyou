@@ -16,8 +16,6 @@ import Slider from './components/Slider';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
-  const [showPhoto, setShowPhoto] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [isFadeIn, setIsFadeIn] = useState(true);
 
   const {mapPage, galleryPage, uploadingState} = useShowComponentStore();
@@ -51,16 +49,6 @@ function App() {
 
     return () => unsubscribe();
   }, []);
-
-  const handleShowPhoto = (isShow, photoInfo) => {
-    setShowPhoto(isShow);
-
-    if (photoInfo) {
-      setSelectedPhoto(photoInfo);
-    } else {
-      setSelectedPhoto(null);
-    }
-  };
 
   function convertDateStringToDate(dateString) {
     const formattedDateString = dateString.replace(/(\d{4})년 (\d{2})월 (\d{2})일/, '$1-$2-$3');
@@ -100,7 +88,7 @@ function App() {
 
   return (
     <>
-      <MemoryDialog showPhoto={showPhoto} handleShowPhoto={handleShowPhoto} selectedPhoto={selectedPhoto} />
+      <MemoryDialog />
       <AddMemory />
       <AnimatePresence>
         {!mapPage && !galleryPage && (
@@ -159,7 +147,7 @@ function App() {
             transition={transitionSettings}
             className="w-full h-full absolute overflow-y-auto"
           >
-            <Gallery handleShowPhoto={handleShowPhoto} />
+            <Gallery />
           </motion.div>
         )}
       </AnimatePresence>

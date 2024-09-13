@@ -9,10 +9,14 @@ const useMemories = create((set) => ({
     setError: (error) => set({error: error}),
     selectedOurMemory: {},
     setSelectedOurMemory: (memory) => set({selectedOurMemory: memory}),
-    photoDialog: false,
-    setPhotoDialog: (isShow) => set({photoDialog: isShow}),
-    selectedOurPhoto: null,
-    setSelectEdOurPhoto: (photoInfo) => set({selectedOurPhoto: photoInfo})
+    photoDialog: {showPhotoDialog: false, photoInfo: undefined},
+    setPhotoDialog: ({showPhotoDialog, photoInfo}) =>
+        set(() => ({
+            photoDialog: {
+                showPhotoDialog: showPhotoDialog,
+                photoInfo: photoInfo
+            }
+        }))
 }));
 
 export default useMemories;

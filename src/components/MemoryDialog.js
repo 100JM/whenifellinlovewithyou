@@ -8,25 +8,25 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 
-const MemoryDialog = ({ showPhoto, handleShowPhoto, selectedPhoto }) => {
+const MemoryDialog = () => {
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const {photoDialog} = useMemories();
+    const { photoDialog, setPhotoDialog } = useMemories();
 
     const handleMediaLoad = () => {
         setIsLoaded(true);
     };
 
-    useEffect(() => {
-        if(!showPhoto) {
-            setIsLoaded(false);
-        }
-    }, [showPhoto]);
-    console.log(photoDialog);
+    // useEffect(() => {
+    //     if (!photoDialog.showPhotoDialog) {
+    //         setIsLoaded(false);
+    //     }
+    // }, [photoDialog.showPhotoDialog]);
+
     return (
         <Dialog
-            open={showPhoto}
-            onClose={() => handleShowPhoto(false)}
+            open={photoDialog.showPhotoDialog}
+            onClose={() => setPhotoDialog({showPhotoDialog: false})}
             maxWidth="xs"
             fullWidth={true}
         >
@@ -36,38 +36,38 @@ const MemoryDialog = ({ showPhoto, handleShowPhoto, selectedPhoto }) => {
                         !isLoaded && <div className="flex justify-center items-center"><ClipLoader color={"#FFB6C1"} size={70} /></div>
                     }
                     {
-                        selectedPhoto &&
+                        photoDialog.photoInfo &&
                         <>
                             <div>
-                                {selectedPhoto.locationName &&
-                                    <span>{`🚩${selectedPhoto.locationName}`}</span>
+                                {photoDialog.photoInfo.locationName &&
+                                    <span>{`🚩${photoDialog.photoInfo.locationName}`}</span>
                                 }
-                                <button className="float-end" onClick={() => handleShowPhoto(false)}>
+                                <button className="float-end" onClick={() => setPhotoDialog({showPhotoDialog: false})}>
                                     <FontAwesomeIcon icon={faXmark} />
                                 </button>
                             </div>
                             <div>
                                 {
-                                    !selectedPhoto.video
+                                    !photoDialog.photoInfo.video
                                         ?
-                                        <img src={selectedPhoto.image} alt={selectedPhoto.date} onLoad={handleMediaLoad} />
+                                        <img src={photoDialog.photoInfo.image} alt={photoDialog.photoInfo.date} onLoad={handleMediaLoad} />
                                         :
                                         <video
-                                            src={selectedPhoto.video}
+                                            src={photoDialog.photoInfo.video}
                                             type="video/mp4"
                                             controls
-                                            poster={selectedPhoto.image}
+                                            poster={photoDialog.photoInfo.image}
                                             onLoadStart={handleMediaLoad}
                                         ></video>
                                 }
                             </div>
                             <div className="text-slate-500">
-                                <span>{selectedPhoto.date}</span>
+                                <span>{photoDialog.photoInfo.date}</span>
                             </div>
-                            {selectedPhoto.alt &&
+                            {photoDialog.photoInfo.alt &&
                                 <div>
                                     <span>
-                                        {selectedPhoto.alt.split('<br />').map((line, index) => (
+                                        {photoDialog.photoInfo.alt.split('<br />').map((line, index) => (
                                             <span key={index}>
                                                 {line}
                                                 <br />
