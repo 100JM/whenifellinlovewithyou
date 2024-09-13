@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 import useMemories from '../store/memory';
 

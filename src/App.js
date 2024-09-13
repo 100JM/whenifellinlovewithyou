@@ -37,6 +37,7 @@ function App() {
 
       setOurMemories(sortDocs);
       setIsLoading(false);
+      setError(null);
     },
     (error) => {
       console.error('shnapshot error:', error);

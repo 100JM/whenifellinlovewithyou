@@ -134,6 +134,13 @@ const Slider = () => {
                     onInit={handleSwiperInit}
                     onSlideChange={handleSlideChange}
                 >
+                    {error && !isLoading &&
+                        <SwiperSlide>
+                            <div className="w-full h-full flex justify-center items-center slideDiv">
+                                데이터를 불러오는데 에러가 발생했습니다🚫
+                            </div>
+                        </SwiperSlide>
+                    }
                     {isLoading &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
@@ -141,7 +148,7 @@ const Slider = () => {
                             </div>
                         </SwiperSlide>
                     }
-                    {ourMemories.length === 0 && !isLoading &&
+                    {ourMemories.length === 0 && !isLoading && !error &&
                         <SwiperSlide>
                             <div className="w-full h-full flex justify-center items-center slideDiv">
                                 등록된 추억이 없어요🥲
