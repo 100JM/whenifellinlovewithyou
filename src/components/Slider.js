@@ -209,7 +209,7 @@ const Slider = () => {
                     }
                     <SpeedDial
                         ariaLabel="SpeedDial"
-                        icon={<SpeedDialIcon />}
+                        icon={<SpeedDialIcon className="flex items-center justify-center" />}
                         className="absolute bottom-1 -right-1"
                         sx={{
                             "& button": { width: "36px", height: "36px" },
